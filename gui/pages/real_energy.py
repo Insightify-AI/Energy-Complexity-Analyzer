@@ -642,7 +642,117 @@ class RealEnergyPage(QWidget):
         
         self.tabs.addTab(line_tab, "Olcekleme")
         
-        # Tab 3: Pie Chart
+        # Tab 3: Runs Detail - Her çalıştırma için detaylı tablo
+        runs_tab = QWidget()
+        runs_layout = QVBoxLayout(runs_tab)
+        runs_layout.setContentsMargins(16, 16, 16, 16)
+        runs_layout.setSpacing(12)
+        
+        # Header
+        runs_header = QLabel("Performans Metrikleri")
+        runs_header.setStyleSheet(f"""
+            font-size: 18px; 
+            font-weight: bold; 
+            color: {Colors.ACCENT};
+            padding: 8px 0;
+        """)
+        runs_layout.addWidget(runs_header)
+        
+        runs_info = QLabel("Her calistirma icin detayli sonuclar")
+        runs_info.setStyleSheet(f"color: {Colors.TEXT_MUTED}; font-size: 12px; margin-bottom: 8px;")
+        runs_layout.addWidget(runs_info)
+        
+        # Algorithm selector
+        algo_select_row = QHBoxLayout()
+        algo_label = QLabel("Algoritma:")
+        algo_label.setStyleSheet(f"color: {Colors.TEXT_MAIN}; font-weight: 500;")
+        self.runs_algo_combo = QComboBox()
+        self.runs_algo_combo.setStyleSheet(self._combo_style())
+        self.runs_algo_combo.setMinimumWidth(200)
+        self.runs_algo_combo.currentIndexChanged.connect(self.update_runs_table)
+        algo_select_row.addWidget(algo_label)
+        algo_select_row.addWidget(self.runs_algo_combo)
+        
+        # Size selector
+        size_label = QLabel("Boyut:")
+        size_label.setStyleSheet(f"color: {Colors.TEXT_MAIN}; font-weight: 500; margin-left: 20px;")
+        self.runs_size_combo = QComboBox()
+        self.runs_size_combo.setStyleSheet(self._combo_style())
+        self.runs_size_combo.setMinimumWidth(120)
+        self.runs_size_combo.currentIndexChanged.connect(self.update_runs_table)
+        algo_select_row.addWidget(size_label)
+        algo_select_row.addWidget(self.runs_size_combo)
+        
+        algo_select_row.addStretch()
+        runs_layout.addLayout(algo_select_row)
+        
+        # Runs table with special styling
+        self.runs_table = QTableWidget()
+        self.runs_table.setColumnCount(4)
+        self.runs_table.setHorizontalHeaderLabels(["Test #", "Calisma Suresi", "Bellek Kullanimi", "Enerji Tuketimi"])
+        self.runs_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.runs_table.setStyleSheet(f"""
+            QTableWidget {{
+                background: {Colors.BG_CARD};
+                color: {Colors.TEXT_MAIN};
+                border: none;
+                border-radius: 12px;
+                gridline-color: transparent;
+            }}
+            QTableWidget::item {{
+                padding: 16px;
+                border-bottom: 1px solid {Colors.BORDER};
+            }}
+            QHeaderView::section {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #6366F1, stop:1 #8B5CF6);
+                color: white;
+                padding: 14px;
+                border: none;
+                font-weight: bold;
+                font-size: 13px;
+            }}
+            QHeaderView::section:first {{
+                border-top-left-radius: 12px;
+            }}
+            QHeaderView::section:last {{
+                border-top-right-radius: 12px;
+            }}
+        """)
+        self.runs_table.setMinimumHeight(300)
+        self.runs_table.setShowGrid(False)
+        self.runs_table.setAlternatingRowColors(False)
+        self.runs_table.verticalHeader().setVisible(False)
+        runs_layout.addWidget(self.runs_table)
+        
+        # Summary card
+        self.runs_summary = QFrame()
+        self.runs_summary.setStyleSheet(f"""
+            QFrame {{
+                background: {Colors.BG_DARKER};
+                border-radius: 10px;
+                border: 1px solid {Colors.BORDER};
+            }}
+        """)
+        summary_layout = QHBoxLayout(self.runs_summary)
+        summary_layout.setContentsMargins(20, 16, 20, 16)
+        summary_layout.setSpacing(40)
+        
+        # Summary stats placeholders
+        self.summary_time_label = self._create_summary_stat("Ort. Sure", "0.00 ms", Colors.ACCENT)
+        self.summary_memory_label = self._create_summary_stat("Ort. Bellek", "0 B", Colors.PRIMARY)
+        self.summary_energy_label = self._create_summary_stat("Ort. Enerji", "0.00 mJ", "#10B981")
+        
+        summary_layout.addWidget(self.summary_time_label)
+        summary_layout.addWidget(self.summary_memory_label)
+        summary_layout.addWidget(self.summary_energy_label)
+        summary_layout.addStretch()
+        
+        runs_layout.addWidget(self.runs_summary)
+        
+        self.tabs.addTab(runs_tab, "Calistirmalar")
+        
+        # Tab 4: Pie Chart
         pie_tab = QWidget()
         pie_layout = QVBoxLayout(pie_tab)
         pie_layout.setContentsMargins(16, 16, 16, 16)
@@ -653,7 +763,7 @@ class RealEnergyPage(QWidget):
         
         self.tabs.addTab(pie_tab, "Enerji Dagilimi")
         
-        # Tab 4: Table
+        # Tab 5: Table
         table_tab = QWidget()
         table_layout = QVBoxLayout(table_tab)
         table_layout.setContentsMargins(16, 16, 16, 16)
@@ -679,7 +789,7 @@ class RealEnergyPage(QWidget):
         
         self.tabs.addTab(table_tab, "Veri Tablosu")
         
-        # Tab 5: Log
+        # Tab 6: Log
         log_tab = QWidget()
         log_layout = QVBoxLayout(log_tab)
         log_layout.setContentsMargins(16, 16, 16, 16)
@@ -726,6 +836,25 @@ class RealEnergyPage(QWidget):
         shadow.setOffset(0, 3)
         card.setGraphicsEffect(shadow)
         return card
+    
+    def _create_summary_stat(self, title, value, color):
+        """Özet istatistik widget'ı oluştur"""
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
+        
+        value_label = QLabel(value)
+        value_label.setObjectName("value")
+        value_label.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {color};")
+        
+        title_label = QLabel(title)
+        title_label.setStyleSheet(f"font-size: 11px; color: {Colors.TEXT_MUTED};")
+        
+        layout.addWidget(value_label)
+        layout.addWidget(title_label)
+        
+        return widget
     
     def _type_btn_style(self, color):
         return f"""
@@ -899,6 +1028,7 @@ class RealEnergyPage(QWidget):
             self.status_label.setStyleSheet(f"color: {Colors.SUCCESS}; font-size: 12px;")
             self.update_all_charts()
             self.update_table()
+            self.populate_runs_combos()
             self.tabs.setCurrentIndex(0)
     
     def reset_ui(self):
@@ -936,5 +1066,143 @@ class RealEnergyPage(QWidget):
         
         self.results_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
     
+    def populate_runs_combos(self):
+        """Çalıştırmalar tabındaki combo'ları doldur"""
+        if not self.results_data:
+            return
+        
+        # Algoritma combo'sunu doldur
+        self.runs_algo_combo.blockSignals(True)
+        self.runs_algo_combo.clear()
+        for key, info in self.results_data.items():
+            self.runs_algo_combo.addItem(info.get('name', key), key)
+        self.runs_algo_combo.blockSignals(False)
+        
+        # İlk algoritmanın boyutlarını yükle
+        if self.results_data:
+            first_key = list(self.results_data.keys())[0]
+            self.update_size_combo(first_key)
+        
+        self.update_runs_table()
+    
+    def update_size_combo(self, algo_key):
+        """Seçilen algoritmaya göre boyut combo'sunu güncelle"""
+        self.runs_size_combo.blockSignals(True)
+        self.runs_size_combo.clear()
+        
+        if algo_key in self.results_data:
+            sizes = self.results_data[algo_key].get('sizes', {})
+            for size in sorted(sizes.keys()):
+                self.runs_size_combo.addItem(f"n = {size}", size)
+        
+        self.runs_size_combo.blockSignals(False)
+    
+    def update_runs_table(self):
+        """Çalıştırmalar tablosunu güncelle"""
+        algo_key = self.runs_algo_combo.currentData()
+        size = self.runs_size_combo.currentData()
+        
+        if not algo_key or not size:
+            return
+        
+        # Boyut combo'sunu güncelle
+        current_algo = self.runs_algo_combo.currentData()
+        if current_algo and self.runs_size_combo.count() == 0:
+            self.update_size_combo(current_algo)
+            size = self.runs_size_combo.currentData()
+        
+        if not size:
+            return
+        
+        # Veriyi al
+        algo_data = self.results_data.get(algo_key, {})
+        sizes_data = algo_data.get('sizes', {})
+        size_data = sizes_data.get(size, {})
+        
+        times = size_data.get('times', [])
+        energies = size_data.get('energies', [])
+        memories = size_data.get('memories', [])
+        
+        # Tabloyu doldur
+        num_runs = len(times)
+        self.runs_table.setRowCount(num_runs)
+        
+        # Renk paleti
+        test_colors = ['#4CC9F0', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444']
+        
+        for i in range(num_runs):
+            # Test # sütunu - renkli
+            test_item = QTableWidgetItem(f"#{i+1}")
+            test_item.setTextAlignment(Qt.AlignCenter)
+            color = test_colors[i % len(test_colors)]
+            test_item.setForeground(QColor(color))
+            font = test_item.font()
+            font.setBold(True)
+            font.setPointSize(12)
+            test_item.setFont(font)
+            self.runs_table.setItem(i, 0, test_item)
+            
+            # Çalışma Süresi
+            time_val = times[i] if i < len(times) else 0
+            time_item = QTableWidgetItem(f"{time_val:.2f} ms")
+            time_item.setTextAlignment(Qt.AlignCenter)
+            self.runs_table.setItem(i, 1, time_item)
+            
+            # Bellek Kullanımı
+            mem_val = memories[i] if i < len(memories) else 0
+            if mem_val < 1:
+                mem_str = f"{int(mem_val * 1024)} B"
+            elif mem_val < 1024:
+                mem_str = f"{mem_val:.0f} KB"
+            else:
+                mem_str = f"{mem_val / 1024:.2f} MB"
+            mem_item = QTableWidgetItem(mem_str)
+            mem_item.setTextAlignment(Qt.AlignCenter)
+            self.runs_table.setItem(i, 2, mem_item)
+            
+            # Enerji Tüketimi
+            energy_val = energies[i] if i < len(energies) else 0
+            if energy_val < 0.001:
+                energy_str = f"{energy_val * 1000:.2f} mJ"
+            else:
+                energy_str = f"{energy_val:.4f} J"
+            energy_item = QTableWidgetItem(energy_str)
+            energy_item.setTextAlignment(Qt.AlignCenter)
+            self.runs_table.setItem(i, 3, energy_item)
+        
+        # Satır yüksekliğini ayarla
+        for i in range(num_runs):
+            self.runs_table.setRowHeight(i, 50)
+        
+        # Özet istatistikleri güncelle
+        if times:
+            avg_time = sum(times) / len(times)
+            avg_memory = sum(memories) / len(memories) if memories else 0
+            avg_energy = sum(energies) / len(energies) if energies else 0
+            
+            # Time label
+            time_label = self.summary_time_label.findChild(QLabel, "value")
+            if time_label:
+                time_label.setText(f"{avg_time:.2f} ms")
+            
+            # Memory label
+            mem_label = self.summary_memory_label.findChild(QLabel, "value")
+            if mem_label:
+                if avg_memory < 1:
+                    mem_label.setText(f"{int(avg_memory * 1024)} B")
+                elif avg_memory < 1024:
+                    mem_label.setText(f"{avg_memory:.0f} KB")
+                else:
+                    mem_label.setText(f"{avg_memory / 1024:.2f} MB")
+            
+            # Energy label
+            energy_label = self.summary_energy_label.findChild(QLabel, "value")
+            if energy_label:
+                if avg_energy < 0.001:
+                    energy_label.setText(f"{avg_energy * 1000:.2f} mJ")
+                else:
+                    energy_label.setText(f"{avg_energy:.4f} J")
+    
     def refresh(self):
         pass
+
