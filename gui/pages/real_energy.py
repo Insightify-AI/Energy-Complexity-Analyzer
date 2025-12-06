@@ -1188,7 +1188,7 @@ class RealEnergyPage(QWidget):
         if not self.results_data:
             return
         
-        cols = ['Algoritma', 'Karmasiklik', 'Ort. Sure (ms)', 'Ort. Enerji (J)', 'Ort. Bellek (KB)']
+        cols = ['Algoritma', 'Karmasiklik', 'Ort. Sure', 'Ort. Enerji', 'Ort. Bellek']
         self.results_table.setColumnCount(len(cols))
         self.results_table.setHorizontalHeaderLabels(cols)
         self.results_table.setRowCount(len(self.results_data))
@@ -1196,9 +1196,36 @@ class RealEnergyPage(QWidget):
         for i, (key, info) in enumerate(self.results_data.items()):
             self.results_table.setItem(i, 0, QTableWidgetItem(info.get('name', key)))
             self.results_table.setItem(i, 1, QTableWidgetItem(info.get('complexity_time', 'N/A')))
-            self.results_table.setItem(i, 2, QTableWidgetItem(f"{info.get('avg_time', 0):.4f}"))
-            self.results_table.setItem(i, 3, QTableWidgetItem(f"{info.get('avg_energy', 0):.6f}"))
-            self.results_table.setItem(i, 4, QTableWidgetItem(f"{info.get('avg_memory', 0):.2f}"))
+            
+            # Süre - birimli
+            time_val = info.get('avg_time', 0)
+            if time_val < 1:
+                time_str = f"{time_val * 1000:.2f} µs"
+            elif time_val < 1000:
+                time_str = f"{time_val:.4f} ms"
+            else:
+                time_str = f"{time_val / 1000:.2f} s"
+            self.results_table.setItem(i, 2, QTableWidgetItem(time_str))
+            
+            # Enerji - birimli
+            energy_val = info.get('avg_energy', 0)
+            if energy_val < 0.001:
+                energy_str = f"{energy_val * 1000:.4f} mJ"
+            elif energy_val < 1:
+                energy_str = f"{energy_val:.6f} J"
+            else:
+                energy_str = f"{energy_val:.4f} J"
+            self.results_table.setItem(i, 3, QTableWidgetItem(energy_str))
+            
+            # Bellek - birimli
+            memory_val = info.get('avg_memory', 0)
+            if memory_val < 1:
+                memory_str = f"{memory_val * 1024:.0f} B"
+            elif memory_val < 1024:
+                memory_str = f"{memory_val:.2f} KB"
+            else:
+                memory_str = f"{memory_val / 1024:.2f} MB"
+            self.results_table.setItem(i, 4, QTableWidgetItem(memory_str))
         
         self.results_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
     
@@ -1548,18 +1575,43 @@ class RealEnergyPage(QWidget):
                     ax = fig.add_subplot(111)
                     ax.axis('off')
                     
-                    # Tablo verisi
+                    # Tablo verisi - birimlerle birlikte
                     table_data = []
                     for key, info in self.results_data.items():
+                        # Süre formatlama
+                        time_val = info.get('avg_time', 0)
+                        if time_val < 1:
+                            time_str = f"{time_val * 1000:.2f} µs"
+                        elif time_val < 1000:
+                            time_str = f"{time_val:.4f} ms"
+                        else:
+                            time_str = f"{time_val / 1000:.2f} s"
+                        
+                        # Enerji formatlama
+                        energy_val = info.get('avg_energy', 0)
+                        if energy_val < 0.001:
+                            energy_str = f"{energy_val * 1000:.4f} mJ"
+                        else:
+                            energy_str = f"{energy_val:.6f} J"
+                        
+                        # Bellek formatlama
+                        memory_val = info.get('avg_memory', 0)
+                        if memory_val < 1:
+                            memory_str = f"{memory_val * 1024:.0f} B"
+                        elif memory_val < 1024:
+                            memory_str = f"{memory_val:.2f} KB"
+                        else:
+                            memory_str = f"{memory_val / 1024:.2f} MB"
+                        
                         table_data.append([
                             info.get('name', key),
                             info.get('complexity_time', 'N/A'),
-                            f"{info.get('avg_time', 0):.4f}",
-                            f"{info.get('avg_energy', 0):.6f}",
-                            f"{info.get('avg_memory', 0):.2f}"
+                            time_str,
+                            energy_str,
+                            memory_str
                         ])
                     
-                    columns = ['Algoritma', 'Karmasiklik', 'Sure (ms)', 'Enerji (J)', 'Bellek (KB)']
+                    columns = ['Algoritma', 'Karmasiklik', 'Ort. Sure', 'Ort. Enerji', 'Ort. Bellek']
                     
                     table = ax.table(
                         cellText=table_data,
