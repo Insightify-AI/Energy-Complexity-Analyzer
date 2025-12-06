@@ -1,0 +1,23 @@
+# =============================================
+# Algoritma Enerji Analizi Platformu
+# Bağımlılıklar
+# =============================================
+
+# GUI Framework
+PyQt5>=5.15.0
+
+# Grafik ve Görselleştirme
+matplotlib>=3.5.0
+
+# =============================================
+# Opsiyonel Bağımlılıklar (Gerekirse)
+# =============================================
+
+# PDF Oluşturma (Raporlama için)
+# reportlab>=4.0.0
+
+# Bilimsel Hesaplama (Gelişmiş analiz için)
+# numpy>=1.21.0
+
+# Sistem Bilgisi (CPU/Bellek izleme için)
+# psutil>=5.9.0
