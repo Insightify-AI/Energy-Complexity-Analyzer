@@ -1,0 +1,643 @@
+{
+  "meta": {
+    "timestamp": "2025-12-05T23:29:58.038939",
+    "system_info": {
+      "platform": "win32",
+      "python_version": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+      "available_methods": [
+        "wmi",
+        "psutil",
+        "estimation"
+      ],
+      "cpu_count": 16,
+      "total_memory_gb": 15.730705261230469
+    },
+    "measurement_method": "wmi"
+  },
+  "benchmarks": [
+    {
+      "type": "divide_conquer",
+      "size": 100,
+      "algorithm": "merge_sort",
+      "data_size": 100,
+      "runs": 3,
+      "results": [
+        {
+          "run": 1,
+          "energy": {
+            "algorithm": "merge_sort",
+            "data_size": 100,
+            "execution_time_ms": 0.4429000000527594,
+            "energy_joules": 0.011169938001330594,
+            "power_watts": 25.220000000000002,
+            "cpu_percent": 11.45,
+            "memory_mb": 0.14139270782470703,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:29:58.061560",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 549,
+            "swaps": 0,
+            "iterations": 549,
+            "memory_accesses": 1770,
+            "recursive_calls": 99,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Merge Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 2,
+          "energy": {
+            "algorithm": "merge_sort",
+            "data_size": 100,
+            "execution_time_ms": 0.48210000022663735,
+            "energy_joules": 0.010403718004890835,
+            "power_watts": 21.580000000000002,
+            "cpu_percent": 9.65,
+            "memory_mb": 0.08088970184326172,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:01.129563",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 549,
+            "swaps": 0,
+            "iterations": 549,
+            "memory_accesses": 1770,
+            "recursive_calls": 99,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Merge Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 3,
+          "energy": {
+            "algorithm": "merge_sort",
+            "data_size": 100,
+            "execution_time_ms": 0.533799999175244,
+            "energy_joules": 0.010964251983059512,
+            "power_watts": 20.54,
+            "cpu_percent": 9.65,
+            "memory_mb": 0.08108806610107422,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:03.527379",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 549,
+            "swaps": 0,
+            "iterations": 549,
+            "memory_accesses": 1770,
+            "recursive_calls": 99,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Merge Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(n)",
+            "category": "divide_conquer"
+          }
+        }
+      ],
+      "averages": {
+        "energy_joules": 0.010845969329760313,
+        "execution_time_ms": 0.48626666648488026,
+        "power_watts": 22.44666666666667
+      }
+    },
+    {
+      "type": "divide_conquer",
+      "size": 100,
+      "algorithm": "quick_sort",
+      "data_size": 100,
+      "runs": 3,
+      "results": [
+        {
+          "run": 1,
+          "energy": {
+            "algorithm": "quick_sort",
+            "data_size": 100,
+            "execution_time_ms": 0.23130000045057386,
+            "energy_joules": 0.0036684180071461015,
+            "power_watts": 15.860000000000001,
+            "cpu_percent": 4.75,
+            "memory_mb": 0.08188152313232422,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:05.914270",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 661,
+            "swaps": 512,
+            "iterations": 661,
+            "memory_accesses": 1749,
+            "recursive_calls": 64,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Quick Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(log n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 2,
+          "energy": {
+            "algorithm": "quick_sort",
+            "data_size": 100,
+            "execution_time_ms": 0.2488999998604413,
+            "energy_joules": 0.004724121997351177,
+            "power_watts": 18.980000000000004,
+            "cpu_percent": 3.1,
+            "memory_mb": 0.08146953582763672,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:08.342192",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 661,
+            "swaps": 512,
+            "iterations": 661,
+            "memory_accesses": 1749,
+            "recursive_calls": 64,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Quick Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(log n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 3,
+          "energy": {
+            "algorithm": "quick_sort",
+            "data_size": 100,
+            "execution_time_ms": 0.20330000006651971,
+            "energy_joules": 0.004122924001349021,
+            "power_watts": 20.280000000000005,
+            "cpu_percent": 10.95,
+            "memory_mb": 0.08242321014404297,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:10.765493",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 661,
+            "swaps": 512,
+            "iterations": 661,
+            "memory_accesses": 1749,
+            "recursive_calls": 64,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Quick Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(log n)",
+            "category": "divide_conquer"
+          }
+        }
+      ],
+      "averages": {
+        "energy_joules": 0.0041718213352821,
+        "execution_time_ms": 0.2278333334591783,
+        "power_watts": 18.37333333333334
+      }
+    },
+    {
+      "type": "matrix",
+      "size": 100,
+      "algorithm": "strassen",
+      "data_size": 100,
+      "runs": 3,
+      "results": [
+        {
+          "run": 1,
+          "energy": {
+            "algorithm": "strassen",
+            "data_size": 100,
+            "execution_time_ms": 0.20679999943240546,
+            "energy_joules": 0.0031723119912931,
+            "power_watts": 15.340000000000002,
+            "cpu_percent": 6.1,
+            "memory_mb": 0.08294200897216797,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:13.184818",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 0,
+            "swaps": 0,
+            "iterations": 0,
+            "memory_accesses": 1536,
+            "recursive_calls": 1,
+            "operations": 1024
+          },
+          "algorithm_info": {
+            "name": "Strassen Matrix Mult.",
+            "complexity_time": "O(n^2.81)",
+            "complexity_space": "O(n^2)",
+            "category": "matrix"
+          }
+        },
+        {
+          "run": 2,
+          "energy": {
+            "algorithm": "strassen",
+            "data_size": 100,
+            "execution_time_ms": 0.3581000000849599,
+            "energy_joules": 0.00856575200203224,
+            "power_watts": 23.919999999999998,
+            "cpu_percent": 10.2,
+            "memory_mb": 0.08378887176513672,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:15.592711",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 0,
+            "swaps": 0,
+            "iterations": 0,
+            "memory_accesses": 1536,
+            "recursive_calls": 1,
+            "operations": 1024
+          },
+          "algorithm_info": {
+            "name": "Strassen Matrix Mult.",
+            "complexity_time": "O(n^2.81)",
+            "complexity_space": "O(n^2)",
+            "category": "matrix"
+          }
+        },
+        {
+          "run": 3,
+          "energy": {
+            "algorithm": "strassen",
+            "data_size": 100,
+            "execution_time_ms": 0.18769999951473437,
+            "energy_joules": 0.004977803987130756,
+            "power_watts": 26.520000000000003,
+            "cpu_percent": 6.25,
+            "memory_mb": 0.08224010467529297,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:18.008914",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 0,
+            "swaps": 0,
+            "iterations": 0,
+            "memory_accesses": 1536,
+            "recursive_calls": 1,
+            "operations": 1024
+          },
+          "algorithm_info": {
+            "name": "Strassen Matrix Mult.",
+            "complexity_time": "O(n^2.81)",
+            "complexity_space": "O(n^2)",
+            "category": "matrix"
+          }
+        }
+      ],
+      "averages": {
+        "energy_joules": 0.005571955993485366,
+        "execution_time_ms": 0.25086666634403326,
+        "power_watts": 21.926666666666666
+      }
+    },
+    {
+      "type": "divide_conquer",
+      "size": 500,
+      "algorithm": "merge_sort",
+      "data_size": 500,
+      "runs": 3,
+      "results": [
+        {
+          "run": 1,
+          "energy": {
+            "algorithm": "merge_sort",
+            "data_size": 500,
+            "execution_time_ms": 10.780499998872983,
+            "energy_joules": 0.2634754199724557,
+            "power_watts": 24.44,
+            "cpu_percent": 5.25,
+            "memory_mb": 0.08622264862060547,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:20.469753",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 3865,
+            "swaps": 0,
+            "iterations": 3865,
+            "memory_accesses": 12218,
+            "recursive_calls": 499,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Merge Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 2,
+          "energy": {
+            "algorithm": "merge_sort",
+            "data_size": 500,
+            "execution_time_ms": 10.042500000054133,
+            "energy_joules": 0.2558829000013793,
+            "power_watts": 25.48,
+            "cpu_percent": 13.3,
+            "memory_mb": 0.08566570281982422,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:23.078544",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 3865,
+            "swaps": 0,
+            "iterations": 3865,
+            "memory_accesses": 12218,
+            "recursive_calls": 499,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Merge Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 3,
+          "energy": {
+            "algorithm": "merge_sort",
+            "data_size": 500,
+            "execution_time_ms": 2.5802000000112457,
+            "energy_joules": 0.057693272000251455,
+            "power_watts": 22.36,
+            "cpu_percent": 10.55,
+            "memory_mb": 0.07982158660888672,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:25.676432",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 3865,
+            "swaps": 0,
+            "iterations": 3865,
+            "memory_accesses": 12218,
+            "recursive_calls": 499,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Merge Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(n)",
+            "category": "divide_conquer"
+          }
+        }
+      ],
+      "averages": {
+        "energy_joules": 0.19235053065802885,
+        "execution_time_ms": 7.801066666312788,
+        "power_watts": 24.093333333333334
+      }
+    },
+    {
+      "type": "divide_conquer",
+      "size": 500,
+      "algorithm": "quick_sort",
+      "data_size": 500,
+      "runs": 3,
+      "results": [
+        {
+          "run": 1,
+          "energy": {
+            "algorithm": "quick_sort",
+            "data_size": 500,
+            "execution_time_ms": 1.5340000009018695,
+            "energy_joules": 0.03749096002204169,
+            "power_watts": 24.44,
+            "cpu_percent": 17.95,
+            "memory_mb": 0.11453056335449219,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:28.099898",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 5075,
+            "swaps": 2822,
+            "iterations": 5075,
+            "memory_accesses": 11061,
+            "recursive_calls": 342,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Quick Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(log n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 2,
+          "energy": {
+            "algorithm": "quick_sort",
+            "data_size": 500,
+            "execution_time_ms": 1.452399999834597,
+            "energy_joules": 0.03436378399608657,
+            "power_watts": 23.66,
+            "cpu_percent": 6.300000000000001,
+            "memory_mb": 0.08106517791748047,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:30.548266",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 5075,
+            "swaps": 2822,
+            "iterations": 5075,
+            "memory_accesses": 11061,
+            "recursive_calls": 342,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Quick Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(log n)",
+            "category": "divide_conquer"
+          }
+        },
+        {
+          "run": 3,
+          "energy": {
+            "algorithm": "quick_sort",
+            "data_size": 500,
+            "execution_time_ms": 1.6432999982498586,
+            "energy_joules": 0.040162251957226544,
+            "power_watts": 24.44,
+            "cpu_percent": 8.75,
+            "memory_mb": 0.08106517791748047,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:32.977516",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 5075,
+            "swaps": 2822,
+            "iterations": 5075,
+            "memory_accesses": 11061,
+            "recursive_calls": 342,
+            "operations": 0
+          },
+          "algorithm_info": {
+            "name": "Quick Sort",
+            "complexity_time": "O(n log n)",
+            "complexity_space": "O(log n)",
+            "category": "divide_conquer"
+          }
+        }
+      ],
+      "averages": {
+        "energy_joules": 0.037338998658451604,
+        "execution_time_ms": 1.5432333329954417,
+        "power_watts": 24.180000000000003
+      }
+    },
+    {
+      "type": "matrix",
+      "size": 500,
+      "algorithm": "strassen",
+      "data_size": 500,
+      "runs": 3,
+      "results": [
+        {
+          "run": 1,
+          "energy": {
+            "algorithm": "strassen",
+            "data_size": 500,
+            "execution_time_ms": 2.711899998757872,
+            "energy_joules": 0.08038071596318332,
+            "power_watts": 29.64,
+            "cpu_percent": 7.4,
+            "memory_mb": 0.08551311492919922,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:35.396369",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 0,
+            "swaps": 0,
+            "iterations": 0,
+            "memory_accesses": 12288,
+            "recursive_calls": 1,
+            "operations": 8192
+          },
+          "algorithm_info": {
+            "name": "Strassen Matrix Mult.",
+            "complexity_time": "O(n^2.81)",
+            "complexity_space": "O(n^2)",
+            "category": "matrix"
+          }
+        },
+        {
+          "run": 2,
+          "energy": {
+            "algorithm": "strassen",
+            "data_size": 500,
+            "execution_time_ms": 3.52030000067316,
+            "energy_joules": 0.08603613201645204,
+            "power_watts": 24.44,
+            "cpu_percent": 4.95,
+            "memory_mb": 0.08702373504638672,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:37.788698",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 0,
+            "swaps": 0,
+            "iterations": 0,
+            "memory_accesses": 12288,
+            "recursive_calls": 1,
+            "operations": 8192
+          },
+          "algorithm_info": {
+            "name": "Strassen Matrix Mult.",
+            "complexity_time": "O(n^2.81)",
+            "complexity_space": "O(n^2)",
+            "category": "matrix"
+          }
+        },
+        {
+          "run": 3,
+          "energy": {
+            "algorithm": "strassen",
+            "data_size": 500,
+            "execution_time_ms": 2.102700000250479,
+            "energy_joules": 0.04974988200592634,
+            "power_watts": 23.66,
+            "cpu_percent": 6.55,
+            "memory_mb": 0.08472728729248047,
+            "source": "wmi",
+            "timestamp": "2025-12-05T23:30:40.214716",
+            "success": true,
+            "error_message": ""
+          },
+          "metrics": {
+            "comparisons": 0,
+            "swaps": 0,
+            "iterations": 0,
+            "memory_accesses": 12288,
+            "recursive_calls": 1,
+            "operations": 8192
+          },
+          "algorithm_info": {
+            "name": "Strassen Matrix Mult.",
+            "complexity_time": "O(n^2.81)",
+            "complexity_space": "O(n^2)",
+            "category": "matrix"
+          }
+        }
+      ],
+      "averages": {
+        "energy_joules": 0.0720555766618539,
+        "execution_time_ms": 2.778299999893837,
+        "power_watts": 25.913333333333338
+      }
+    }
+  ]
+}
