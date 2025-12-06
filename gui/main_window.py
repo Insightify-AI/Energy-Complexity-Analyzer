@@ -10,9 +10,10 @@ from PyQt5.QtWidgets import (
     QPushButton, QStackedWidget, QLabel, QFrame
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QFont
 
 from gui.styles import Styles, Colors
+from gui.pages.home import HomePage
 from gui.pages.test_runner import TestRunnerPage
 from gui.pages.comparison import ComparisonPage
 from gui.pages.history import HistoryPage
@@ -25,91 +26,129 @@ class MainWindow(QMainWindow):
         
     def init_ui(self):
         self.setWindowTitle("Algoritma Analizi Platformu")
-        self.resize(1200, 800)
+        self.setFixedSize(1000, 800)  # Fixed size - no resizing
         self.setStyleSheet(Styles.MAIN_WINDOW)
         
         # Main Container
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         
-        main_layout = QHBoxLayout(main_widget)
+        main_layout = QVBoxLayout(main_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         
-        # Sidebar
-        sidebar = QFrame()
-        sidebar.setStyleSheet(f"""
+        # ============ TOP HEADER ============
+        header = QFrame()
+        header.setFixedHeight(70)
+        header.setStyleSheet(f"""
             QFrame {{
                 background-color: {Colors.BG_DARKER};
-                border-right: 1px solid {Colors.BORDER};
+                border-bottom: 1px solid {Colors.BORDER};
             }}
         """)
-        sidebar.setFixedWidth(250)
         
-        sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(20, 40, 20, 20)
-        sidebar_layout.setSpacing(10)
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(25, 0, 25, 0)
+        header_layout.setSpacing(0)
         
         # Logo / Title
-        title = QLabel("ALGORİTMA\nANALİZİ")
-        title.setStyleSheet(f"""
-            font-size: 24px;
-            font-weight: bold;
-            color: {Colors.PRIMARY};
-            margin-bottom: 40px;
+        logo = QLabel("⚡ Algoritma Analizi")
+        logo.setStyleSheet(f"""
+            font-size: 18px;
+            font-weight: 900;
+            color: {Colors.TEXT_MAIN};
+            letter-spacing: 0.5px;
+            padding-right: 40px;
         """)
-        title.setAlignment(Qt.AlignCenter)
-        sidebar_layout.addWidget(title)
+        header_layout.addWidget(logo)
         
-        # Navigation Buttons
+        # Navigation Buttons Container
+        nav_container = QWidget()
+        nav_layout = QHBoxLayout(nav_container)
+        nav_layout.setContentsMargins(0, 0, 0, 0)
+        nav_layout.setSpacing(5)
+        
         self.nav_buttons = []
         
-        self.add_nav_button(sidebar_layout, "🚀 Test Çalıştır", 0)
-        self.add_nav_button(sidebar_layout, "📊 Karşılaştırma", 1)
-        self.add_nav_button(sidebar_layout, "🔋 Gerçek Enerji", 2)
-        self.add_nav_button(sidebar_layout, "📜 Geçmiş", 3)
+        # Menu Items
+        self.add_nav_button(nav_layout, "🏠 Ana Sayfa", 0)
+        self.add_nav_button(nav_layout, "🚀 Test", 1)
+        self.add_nav_button(nav_layout, "📊 Karşılaştır", 2)
+        self.add_nav_button(nav_layout, "⚡ Enerji", 3)
+        self.add_nav_button(nav_layout, "📜 Geçmiş", 4)
         
-        sidebar_layout.addStretch()
+        header_layout.addWidget(nav_container)
+        header_layout.addStretch()
         
-        # Version
-        version = QLabel("v2.0.0")
-        version.setStyleSheet(f"color: {Colors.TEXT_MUTED}; font-size: 12px;")
-        version.setAlignment(Qt.AlignCenter)
-        sidebar_layout.addWidget(version)
+        # Version Badge
+        version = QLabel("v2.1.0")
+        version.setStyleSheet(f"""
+            color: {Colors.TEXT_MUTED};
+            font-size: 11px;
+            padding: 5px 12px;
+            background-color: {Colors.BG_CARD};
+            border-radius: 12px;
+            border: 1px solid {Colors.BORDER};
+        """)
+        header_layout.addWidget(version)
         
-        main_layout.addWidget(sidebar)
+        main_layout.addWidget(header)
         
-        # Content Area
+        # ============ CONTENT AREA ============
+        content_container = QFrame()
+        content_container.setStyleSheet(f"""
+            QFrame {{
+                background-color: {Colors.BG_DARK};
+            }}
+        """)
+        
+        content_layout = QVBoxLayout(content_container)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(0)
+        
         self.stack = QStackedWidget()
+        self.stack.setStyleSheet(f"""
+            QStackedWidget {{
+                background-color: {Colors.BG_DARK};
+            }}
+        """)
         
         # Pages
+        self.home_page = HomePage()
         self.test_page = TestRunnerPage()
         self.compare_page = ComparisonPage()
         self.real_energy_page = RealEnergyPage()
         self.history_page = HistoryPage()
         
-        self.stack.addWidget(self.test_page)
-        self.stack.addWidget(self.compare_page)
-        self.stack.addWidget(self.real_energy_page)
-        self.stack.addWidget(self.history_page)
+        # Add pages to stack
+        self.stack.addWidget(self.home_page)        # Index 0
+        self.stack.addWidget(self.test_page)        # Index 1
+        self.stack.addWidget(self.compare_page)     # Index 2
+        self.stack.addWidget(self.real_energy_page) # Index 3
+        self.stack.addWidget(self.history_page)     # Index 4
         
-        main_layout.addWidget(self.stack)
+        content_layout.addWidget(self.stack)
+        main_layout.addWidget(content_container)
         
-        # Set default page
+        # Connect home page navigation
+        self.home_page.navigate_to.connect(self.switch_page)
+        
+        # Start at Home Page
         self.switch_page(0)
 
     def add_nav_button(self, layout, text, index):
         btn = QPushButton(text)
         btn.setCheckable(True)
+        btn.setCursor(Qt.PointingHandCursor)
+        btn.setFixedHeight(40)
         btn.setStyleSheet(f"""
             QPushButton {{
-                text-align: left;
-                padding: 12px 16px;
+                padding: 8px 16px;
                 border-radius: 8px;
                 color: {Colors.TEXT_MUTED};
                 background-color: transparent;
                 font-weight: 600;
-                font-size: 14px;
+                font-size: 13px;
                 border: none;
             }}
             QPushButton:hover {{
@@ -118,7 +157,7 @@ class MainWindow(QMainWindow):
             }}
             QPushButton:checked {{
                 background-color: {Colors.PRIMARY};
-                color: white;
+                color: {Colors.WHITE};
             }}
         """)
         btn.clicked.connect(lambda: self.switch_page(index))
@@ -133,7 +172,7 @@ class MainWindow(QMainWindow):
             btn.setChecked(i == index)
             
         # Refresh page if needed
-        if index == 1: # Comparison
+        if index == 2: # Comparison
             self.compare_page.load_results()
-        elif index == 3: # History
+        elif index == 4: # History
             self.history_page.load_history()

@@ -187,9 +187,10 @@ class RealEnergyPage(QWidget):
         status_frame = QFrame()
         status_frame.setStyleSheet(f"""
             QFrame {{
-                background: {'#d1fae5' if REAL_METER_AVAILABLE else '#fef3c7'};
+                background: {Colors.BG_CARD};
                 border-radius: 12px;
                 border-left: 4px solid {'#10b981' if REAL_METER_AVAILABLE else '#f59e0b'};
+                border: 1px solid {Colors.BORDER};
             }}
         """)
         
@@ -197,14 +198,14 @@ class RealEnergyPage(QWidget):
         status_layout.setContentsMargins(16, 16, 16, 16)
         
         status_icon = QLabel("✅" if REAL_METER_AVAILABLE else "⚠️")
-        status_icon.setStyleSheet("font-size: 24px;")
+        status_icon.setStyleSheet("font-size: 24px; background: transparent; border: none;")
         
         status_text = QLabel(
             "LibreHardwareMonitor hazır - Gerçek ölçüm yapılabilir" 
             if REAL_METER_AVAILABLE else 
             "LibreHardwareMonitor bulunamadı - Tahmin modu kullanılacak"
         )
-        status_text.setStyleSheet("font-size: 14px; font-weight: 500;")
+        status_text.setStyleSheet(f"font-size: 14px; font-weight: 500; color: {Colors.TEXT_MAIN}; background: transparent; border: none;")
         
         status_layout.addWidget(status_icon)
         status_layout.addWidget(status_text)
@@ -214,12 +215,12 @@ class RealEnergyPage(QWidget):
         
         # Config panel
         config = QFrame()
-        config.setStyleSheet("QFrame { background: white; border-radius: 16px; }")
+        config.setStyleSheet(Styles.CARD)
         
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(20)
         shadow.setYOffset(4)
-        shadow.setColor(QColor(0, 0, 0, 25))
+        shadow.setColor(QColor(0, 0, 0, 100))
         config.setGraphicsEffect(shadow)
         
         config_layout = QVBoxLayout(config)
@@ -227,7 +228,7 @@ class RealEnergyPage(QWidget):
         config_layout.setSpacing(16)
         
         config_title = QLabel("⚙️ Ölçüm Yapılandırması")
-        config_title.setStyleSheet("font-size: 18px; font-weight: 600;")
+        config_title.setStyleSheet(f"font-size: 18px; font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
         config_layout.addWidget(config_title)
         
         # Form
@@ -237,7 +238,7 @@ class RealEnergyPage(QWidget):
         # Algorithm
         algo_layout = QVBoxLayout()
         algo_label = QLabel("Algoritma:")
-        algo_label.setStyleSheet("font-weight: 600;")
+        algo_label.setStyleSheet(f"font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
         
         self.algo_combo = QComboBox()
         self.algo_combo.setStyleSheet(Styles.COMBOBOX)
@@ -261,7 +262,7 @@ class RealEnergyPage(QWidget):
         # Data size
         size_layout = QVBoxLayout()
         size_label = QLabel("Veri Boyutu:")
-        size_label.setStyleSheet("font-weight: 600;")
+        size_label.setStyleSheet(f"font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
         
         self.size_spin = QSpinBox()
         self.size_spin.setStyleSheet(Styles.INPUT_FIELD)
@@ -274,7 +275,7 @@ class RealEnergyPage(QWidget):
         # Runs
         runs_layout = QVBoxLayout()
         runs_label = QLabel("Çalıştırma:")
-        runs_label.setStyleSheet("font-weight: 600;")
+        runs_label.setStyleSheet(f"font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
         
         self.runs_spin = QSpinBox()
         self.runs_spin.setStyleSheet(Styles.INPUT_FIELD)
@@ -321,26 +322,17 @@ class RealEnergyPage(QWidget):
         
         # Log panel
         log_frame = QFrame()
-        log_frame.setStyleSheet("QFrame { background: white; border-radius: 16px; }")
+        log_frame.setStyleSheet(Styles.CARD)
         
         log_layout = QVBoxLayout(log_frame)
         log_layout.setContentsMargins(20, 20, 20, 20)
         
         log_title = QLabel("📝 Ölçüm Logu")
-        log_title.setStyleSheet("font-size: 16px; font-weight: 600;")
+        log_title.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
         
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setStyleSheet("""
-            QTextEdit {
-                background: #0f172a;
-                color: #e2e8f0;
-                border-radius: 8px;
-                padding: 12px;
-                font-family: 'Consolas', monospace;
-                font-size: 13px;
-            }
-        """)
+        self.log_text.setStyleSheet(Styles.LOG_TEXT)
         self.log_text.setMinimumHeight(250)
         self.log_text.append("🔋 Gerçek Enerji Ölçümü hazır.")
         self.log_text.append("📝 Bir algoritma seçin ve ölçümü başlatın.")
