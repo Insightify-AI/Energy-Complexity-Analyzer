@@ -180,20 +180,28 @@ class WMIEnergyEstimator:
     
     def get_cpu_usage(self) -> float:
         """Anlık CPU kullanımını al"""
-        try:
-            import wmi
-            c = wmi.WMI()
-            for cpu in c.Win32_Processor():
-                return float(cpu.LoadPercentage or 0)
-        except:
-            pass
-        
-        # Alternatif: psutil kullan
+        # Önce psutil dene (daha güvenilir)
         try:
             import psutil
             return psutil.cpu_percent(interval=0.1)
+        except ImportError:
+            pass
+        
+        # WMI ile dene (COM thread-safe şekilde)
+        try:
+            import pythoncom
+            pythoncom.CoInitialize()
+            try:
+                import wmi
+                c = wmi.WMI()
+                for cpu in c.Win32_Processor():
+                    return float(cpu.LoadPercentage or 0)
+            finally:
+                pythoncom.CoUninitialize()
         except:
-            return 50.0  # Varsayılan
+            pass
+        
+        return 50.0  # Varsayılan
     
     def estimate_power(self, cpu_usage: float, tdp_watts: float = 65) -> float:
         """

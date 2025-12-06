@@ -9,6 +9,10 @@ Gereksinimler:
 
 import sys
 import os
+import warnings
+
+# Matplotlib font uyarılarını sustur
+warnings.filterwarnings('ignore', category=UserWarning, module='matplotlib')
 
 # Modül yolunu düzelt
 script_dir = os.path.dirname(os.path.abspath(__file__))

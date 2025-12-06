@@ -1,347 +1,709 @@
 """
-Gerçek Enerji Ölçümü Sayfası
+Enerji Analizi Sayfası - Çoklu Test ve Grafikler
 """
+
+import json
+import random
+import time
+from datetime import datetime
+from pathlib import Path
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
-    QScrollArea, QComboBox, QSpinBox, QPushButton, QProgressBar,
-    QTextEdit, QGraphicsDropShadowEffect, QTableWidget, QTableWidgetItem,
-    QHeaderView
+    QScrollArea, QCheckBox, QSpinBox, QPushButton, QProgressBar,
+    QTextEdit, QGridLayout, QComboBox, QLineEdit, QGraphicsDropShadowEffect,
+    QTableWidget, QTableWidgetItem, QHeaderView, QTabWidget, QSplitter
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QFont
 
 import sys
-import random
-import time
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from gui.styles import Styles, Colors
+from gui.styles import Colors
 from algorithms import ALGORITHMS
 
+# Matplotlib
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning)
+
 try:
-    from real_power_meter import RealPowerMeter
-    REAL_METER_AVAILABLE = True
-except:
-    REAL_METER_AVAILABLE = False
+    import matplotlib
+    matplotlib.use('Qt5Agg')
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.figure import Figure
+    import matplotlib.pyplot as plt
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+
+# Algoritma türleri
+ALGORITHM_TYPES = {
+    'divide_conquer': {'name': 'Bol ve Yonet', 'icon': 'D&C', 'color': '#4CC9F0'},
+    'dynamic_programming': {'name': 'Dinamik Programlama', 'icon': 'DP', 'color': '#F72585'},
+    'greedy': {'name': 'Acgozlu', 'icon': 'GRD', 'color': '#4361EE'}
+}
 
 
-class RealMeasurementRunner(QThread):
-    progress = pyqtSignal(int)
-    result = pyqtSignal(dict)
-    log = pyqtSignal(str)
+class EnergyTestWorker(QThread):
+    """Enerji testi worker thread'i"""
+    log_signal = pyqtSignal(str)
+    progress_signal = pyqtSignal(int, int, str)
+    result_signal = pyqtSignal(dict)
     
-    def __init__(self, algo_key, data_size, runs=3):
+    def __init__(self, algorithms, sizes, runs):
         super().__init__()
-        self.algo_key = algo_key
-        self.data_size = data_size
+        self.algorithms = algorithms
+        self.sizes = sizes
         self.runs = runs
         self._running = True
-    
+        
     def stop(self):
         self._running = False
     
     def run(self):
-        try:
+        results = {}
+        total = len(self.algorithms) * len(self.sizes) * self.runs
+        current = 0
+        
+        self.log_signal.emit("[*] Enerji analizi baslatiliyor...")
+        self.log_signal.emit(f"    Algoritmalar: {len(self.algorithms)}")
+        self.log_signal.emit(f"    Boyutlar: {self.sizes}")
+        self.log_signal.emit(f"    Tekrar: {self.runs}\n")
+        
+        for algo_key in self.algorithms:
+            if not self._running:
+                break
+                
             # Find algorithm
             algo_info = None
-            algo_cat = None
             for cat, algos in ALGORITHMS.items():
-                if self.algo_key in algos:
-                    algo_info = algos[self.algo_key]
-                    algo_cat = cat
+                if algo_key in algos:
+                    algo_info = algos[algo_key]
                     break
             
             if not algo_info:
-                self.result.emit({'success': False, 'error': 'Algoritma bulunamadı'})
-                return
+                continue
             
-            self.log.emit(f"🔋 Gerçek enerji ölçümü başlatılıyor...")
-            self.log.emit(f"📊 Algoritma: {algo_info['name']}")
-            self.log.emit(f"📏 Veri boyutu: {self.data_size:,}")
+            algo_name = algo_info['name']
+            self.log_signal.emit(f"[>] {algo_name}")
             
-            if REAL_METER_AVAILABLE:
-                meter = RealPowerMeter(sampling_interval_ms=50)
-                is_real = meter.is_available()
-            else:
-                is_real = False
+            results[algo_key] = {
+                'name': algo_name,
+                'complexity_time': algo_info.get('complexity_time', 'N/A'),
+                'complexity_space': algo_info.get('complexity_space', 'N/A'),
+                'sizes': {},
+                'avg_time': 0,
+                'avg_energy': 0,
+                'avg_memory': 0
+            }
             
-            if is_real:
-                self.log.emit("✅ LibreHardwareMonitor bağlantısı kuruldu")
-            else:
-                self.log.emit("⚠️ Gerçek ölçüm yapılamıyor, tahmin modu")
+            all_times = []
+            all_energies = []
+            all_memories = []
             
-            # Test data
-            test_data = [random.randint(1, self.data_size * 10) for _ in range(self.data_size)]
-            is_search = algo_cat == 'searching'
-            if is_search:
-                test_data = sorted(test_data)
-                target = test_data[len(test_data) // 2]
-            
-            all_energy = []
-            all_time = []
-            all_power = []
-            
-            for i in range(self.runs):
+            for size in self.sizes:
                 if not self._running:
-                    return
+                    break
+                    
+                size_times = []
+                size_energies = []
+                size_memories = []
                 
-                self.log.emit(f"\n🏃 Çalıştırma {i+1}/{self.runs}")
-                data_copy = test_data.copy()
-                
-                if is_real:
-                    def run_algo():
-                        if is_search:
-                            return algo_info['func'](data_copy, target)
-                        return algo_info['func'](data_copy)
+                for r in range(self.runs):
+                    if not self._running:
+                        break
                     
-                    measurement = meter.measure_function(
-                        run_algo,
-                        algorithm_name=self.algo_key,
-                        data_size=self.data_size
-                    )
+                    current += 1
+                    self.progress_signal.emit(current, total, algo_name)
                     
-                    all_energy.append(measurement.energy_joules)
-                    all_time.append(measurement.execution_time_ms)
-                    all_power.append(measurement.avg_power_watts)
+                    # Generate test data
+                    data = [random.randint(1, size * 10) for _ in range(size)]
                     
-                    self.log.emit(f"   ⚡ Enerji: {measurement.energy_joules:.6f} J")
-                    self.log.emit(f"   🔌 Güç: {measurement.avg_power_watts:.2f} W")
-                else:
-                    # Estimation mode
+                    # Measure
+                    import tracemalloc
+                    tracemalloc.start()
+                    
                     start = time.perf_counter()
-                    if is_search:
-                        algo_info['func'](data_copy, target)
-                    else:
-                        algo_info['func'](data_copy)
+                    try:
+                        algo_info['func'](data.copy())
+                    except:
+                        pass
                     end = time.perf_counter()
                     
-                    exec_time = (end - start) * 1000
+                    current_mem, peak_mem = tracemalloc.get_traced_memory()
+                    tracemalloc.stop()
+                    
+                    exec_time = (end - start) * 1000  # ms
+                    memory = peak_mem / 1024  # KB
+                    
+                    # Energy estimation (power * time)
                     power = 25.0  # Estimated watts
-                    energy = power * (exec_time / 1000)
+                    energy = power * (exec_time / 1000)  # Joules
                     
-                    all_time.append(exec_time)
-                    all_energy.append(energy)
-                    all_power.append(power)
-                    
-                    self.log.emit(f"   ⏱️ Süre: {exec_time:.4f} ms")
-                    self.log.emit(f"   ⚡ Tahmini enerji: {energy:.6f} J")
+                    size_times.append(exec_time)
+                    size_energies.append(energy)
+                    size_memories.append(memory)
                 
-                self.progress.emit(int((i + 1) / self.runs * 100))
+                if size_times:
+                    avg_t = sum(size_times) / len(size_times)
+                    avg_e = sum(size_energies) / len(size_energies) 
+                    avg_m = sum(size_memories) / len(size_memories)
+                    
+                    results[algo_key]['sizes'][size] = {
+                        'avg_time': avg_t,
+                        'avg_energy': avg_e,
+                        'avg_memory': avg_m,
+                        'times': size_times,
+                        'energies': size_energies,
+                        'memories': size_memories
+                    }
+                    
+                    all_times.extend(size_times)
+                    all_energies.extend(size_energies)
+                    all_memories.extend(size_memories)
+                    
+                    self.log_signal.emit(f"    n={size}: {avg_t:.4f}ms, {avg_e:.6f}J")
             
-            # Results
-            avg_time = sum(all_time) / len(all_time)
-            avg_energy = sum(all_energy) / len(all_energy)
-            avg_power = sum(all_power) / len(all_power)
+            if all_times:
+                results[algo_key]['avg_time'] = sum(all_times) / len(all_times)
+                results[algo_key]['avg_energy'] = sum(all_energies) / len(all_energies)
+                results[algo_key]['avg_memory'] = sum(all_memories) / len(all_memories)
+        
+        # Save results
+        if results:
+            results_dir = Path(__file__).parent.parent.parent / 'results'
+            results_dir.mkdir(exist_ok=True)
             
-            self.log.emit(f"\n{'='*40}")
-            self.log.emit("✅ Ölçüm tamamlandı!")
-            self.log.emit(f"📊 Ortalama süre: {avg_time:.4f} ms")
-            self.log.emit(f"⚡ Ortalama enerji: {avg_energy:.6f} J")
-            self.log.emit(f"🔌 Ortalama güç: {avg_power:.2f} W")
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filepath = results_dir / f'energy_analysis_{timestamp}.json'
             
-            self.result.emit({
-                'success': True,
-                'algorithm': algo_info['name'],
-                'data_size': self.data_size,
-                'is_real': is_real,
-                'avg_time_ms': avg_time,
-                'avg_energy_joules': avg_energy,
-                'avg_power_watts': avg_power,
-                'runs': self.runs
-            })
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(results, f, indent=2, ensure_ascii=False)
             
-        except Exception as e:
-            self.log.emit(f"\n❌ Hata: {str(e)}")
-            self.result.emit({'success': False, 'error': str(e)})
+            self.log_signal.emit(f"\n[OK] Analiz tamamlandi!")
+            self.log_signal.emit(f"[>] Kaydedildi: {filepath.name}")
+        
+        self.result_signal.emit(results)
+
+
+class ChartWidget(QWidget):
+    """Grafik widget'i"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setup_ui()
+        
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        if HAS_MATPLOTLIB:
+            plt.style.use('dark_background')
+            self.figure = Figure(figsize=(8, 4), facecolor='#151922')
+            self.canvas = FigureCanvas(self.figure)
+            layout.addWidget(self.canvas)
+            self.show_empty()
+        else:
+            lbl = QLabel("Grafik icin matplotlib gerekli")
+            lbl.setStyleSheet(f"color: {Colors.TEXT_MUTED}; padding: 40px;")
+            lbl.setAlignment(Qt.AlignCenter)
+            layout.addWidget(lbl)
+    
+    def show_empty(self):
+        if not HAS_MATPLOTLIB:
+            return
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.set_facecolor('#151922')
+        ax.text(0.5, 0.5, 'Test calistirin\nSonuclar burada gorunecek',
+                ha='center', va='center', fontsize=13, color='#64748B',
+                transform=ax.transAxes)
+        ax.axis('off')
+        self.canvas.draw()
+    
+    def plot_bar_comparison(self, data, metric='time', title=''):
+        """Bar chart ile karşılaştırma"""
+        if not HAS_MATPLOTLIB or not data:
+            return
+        
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.set_facecolor('#151922')
+        
+        names = []
+        values = []
+        colors = ['#4CC9F0', '#F72585', '#4361EE', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
+        
+        for key, info in data.items():
+            names.append(info.get('name', key)[:15])
+            if metric == 'time':
+                values.append(info.get('avg_time', 0))
+            elif metric == 'energy':
+                values.append(info.get('avg_energy', 0))
+            elif metric == 'memory':
+                values.append(info.get('avg_memory', 0) / 1024)  # MB
+        
+        if not names:
+            return
+        
+        bars = ax.barh(range(len(names)), values, color=colors[:len(names)], height=0.6)
+        ax.set_yticks(range(len(names)))
+        ax.set_yticklabels(names, fontsize=10, color='white')
+        ax.invert_yaxis()
+        
+        labels = {'time': 'Sure (ms)', 'energy': 'Enerji (J)', 'memory': 'Bellek (MB)'}
+        ax.set_xlabel(labels.get(metric, ''), color='white', fontsize=10)
+        ax.set_title(title, color='white', fontsize=12, fontweight='bold', pad=10)
+        
+        ax.tick_params(axis='x', colors='white')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_color('#2A303C')
+        ax.grid(axis='x', alpha=0.2, color='#2A303C')
+        
+        for bar, val in zip(bars, values):
+            ax.annotate(f'{val:.4f}', xy=(bar.get_width(), bar.get_y() + bar.get_height()/2),
+                       xytext=(5, 0), textcoords='offset points',
+                       ha='left', va='center', color='white', fontsize=9)
+        
+        self.figure.tight_layout()
+        self.canvas.draw()
+    
+    def plot_line_scaling(self, data, metric='time'):
+        """Line chart ile ölçekleme analizi"""
+        if not HAS_MATPLOTLIB or not data:
+            return
+        
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.set_facecolor('#151922')
+        
+        colors = ['#4CC9F0', '#F72585', '#4361EE', '#10B981', '#F59E0B', '#EF4444']
+        color_idx = 0
+        
+        for key, info in data.items():
+            sizes = info.get('sizes', {})
+            if not sizes:
+                continue
+            
+            x = sorted(sizes.keys())
+            y = []
+            for s in x:
+                if metric == 'time':
+                    y.append(sizes[s].get('avg_time', 0))
+                elif metric == 'energy':
+                    y.append(sizes[s].get('avg_energy', 0))
+                elif metric == 'memory':
+                    y.append(sizes[s].get('avg_memory', 0) / 1024)
+            
+            ax.plot(x, y, 'o-', color=colors[color_idx % len(colors)], 
+                   label=info.get('name', key)[:12], linewidth=2, markersize=6)
+            color_idx += 1
+        
+        labels = {'time': 'Sure (ms)', 'energy': 'Enerji (J)', 'memory': 'Bellek (MB)'}
+        ax.set_xlabel('Veri Boyutu (n)', color='white', fontsize=10)
+        ax.set_ylabel(labels.get(metric, ''), color='white', fontsize=10)
+        ax.set_title('Olcekleme Analizi', color='white', fontsize=12, fontweight='bold')
+        
+        ax.tick_params(colors='white')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_color('#2A303C')
+        ax.spines['bottom'].set_color('#2A303C')
+        ax.grid(alpha=0.2, color='#2A303C')
+        ax.legend(loc='upper left', fontsize=8, facecolor='#151922', edgecolor='#2A303C')
+        
+        self.figure.tight_layout()
+        self.canvas.draw()
+    
+    def plot_pie_energy(self, data):
+        """Pie chart ile enerji dağılımı"""
+        if not HAS_MATPLOTLIB or not data:
+            return
+        
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.set_facecolor('#151922')
+        
+        names = []
+        values = []
+        colors = ['#4CC9F0', '#F72585', '#4361EE', '#10B981', '#F59E0B', '#EF4444']
+        
+        for key, info in data.items():
+            names.append(info.get('name', key)[:12])
+            values.append(info.get('avg_energy', 0))
+        
+        if not values or sum(values) == 0:
+            return
+        
+        wedges, texts, autotexts = ax.pie(values, labels=names, autopct='%1.1f%%',
+                                          colors=colors[:len(names)],
+                                          textprops={'color': 'white', 'fontsize': 9})
+        
+        ax.set_title('Enerji Dagilimi', color='white', fontsize=12, fontweight='bold')
+        
+        self.figure.tight_layout()
+        self.canvas.draw()
 
 
 class RealEnergyPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.runner = None
-        self.init_ui()
-    
-    def init_ui(self):
+        self.worker = None
+        self.algo_checkboxes = []
+        self.selected_type = None
+        self.results_data = {}
+        self.setup_ui()
+        
+    def setup_ui(self):
+        # Ana scroll
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setStyleSheet(Styles.PAGE_CONTAINER)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setStyleSheet(f"""
+            QScrollArea {{ border: none; background: {Colors.BG_DARK}; }}
+            QScrollBar:vertical {{
+                background: {Colors.BG_DARKER}; width: 8px; border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background: {Colors.BORDER}; border-radius: 4px; min-height: 30px;
+            }}
+            QScrollBar::handle:vertical:hover {{ background: {Colors.ACCENT}; }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+        """)
         
         content = QWidget()
+        content.setStyleSheet(f"background: {Colors.BG_DARK};")
         layout = QVBoxLayout(content)
-        layout.setContentsMargins(40, 40, 40, 40)
+        layout.setContentsMargins(40, 30, 40, 40)
         layout.setSpacing(24)
         
-        # Header
-        header = QLabel("🔋 Gerçek Enerji Ölçümü")
-        header.setStyleSheet(Styles.LABEL_TITLE)
-        
-        subtitle = QLabel("LibreHardwareMonitor ile gerçek güç tüketimi ölçümü")
-        subtitle.setStyleSheet(Styles.LABEL_SUBTITLE)
-        
+        # === HEADER ===
+        header = QLabel("Enerji Analizi")
+        header.setStyleSheet(f"font-size: 32px; font-weight: bold; color: {Colors.TEXT_MAIN};")
         layout.addWidget(header)
-        layout.addWidget(subtitle)
         
-        # Status card
-        status_frame = QFrame()
-        status_frame.setStyleSheet(f"""
+        desc = QLabel("Algoritmalarin enerji tuketimini analiz edin ve karsilastirin")
+        desc.setStyleSheet(f"font-size: 14px; color: {Colors.TEXT_MUTED}; margin-bottom: 10px;")
+        layout.addWidget(desc)
+        
+        # === CONFIGURATION SECTION ===
+        config_card = self._create_card()
+        config_layout = QVBoxLayout(config_card)
+        config_layout.setContentsMargins(24, 24, 24, 24)
+        config_layout.setSpacing(20)
+        
+        config_title = QLabel("Test Yapilandirmasi")
+        config_title.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {Colors.ACCENT};")
+        config_layout.addWidget(config_title)
+        
+        # Row 1: Algorithm Type Selection
+        type_row = QHBoxLayout()
+        type_row.setSpacing(12)
+        
+        type_label = QLabel("Algoritma Turu:")
+        type_label.setStyleSheet(f"color: {Colors.TEXT_MAIN}; font-weight: 500;")
+        type_row.addWidget(type_label)
+        
+        self.type_buttons = {}
+        for key, info in ALGORITHM_TYPES.items():
+            btn = QPushButton(f"{info['icon']} {info['name']}")
+            btn.setCheckable(True)
+            btn.setCursor(Qt.PointingHandCursor)
+            btn.setStyleSheet(self._type_btn_style(info['color']))
+            btn.clicked.connect(lambda checked, k=key: self.select_type(k))
+            self.type_buttons[key] = btn
+            type_row.addWidget(btn)
+        
+        type_row.addStretch()
+        config_layout.addLayout(type_row)
+        
+        # Row 2: Algorithm Selection
+        algo_row = QVBoxLayout()
+        algo_row.setSpacing(8)
+        
+        algo_header = QHBoxLayout()
+        algo_label = QLabel("Algoritmalar:")
+        algo_label.setStyleSheet(f"color: {Colors.TEXT_MAIN}; font-weight: 500;")
+        algo_header.addWidget(algo_label)
+        
+        self.select_all_btn = QPushButton("Tumunu Sec")
+        self.select_all_btn.setStyleSheet(self._small_btn_style(Colors.ACCENT))
+        self.select_all_btn.clicked.connect(self.select_all_algos)
+        self.select_all_btn.setEnabled(False)
+        algo_header.addWidget(self.select_all_btn)
+        
+        self.clear_btn = QPushButton("Temizle")
+        self.clear_btn.setStyleSheet(self._small_btn_style(Colors.DANGER))
+        self.clear_btn.clicked.connect(self.clear_all_algos)
+        self.clear_btn.setEnabled(False)
+        algo_header.addWidget(self.clear_btn)
+        
+        algo_header.addStretch()
+        algo_row.addLayout(algo_header)
+        
+        # Algorithm checkboxes container
+        self.algo_container = QFrame()
+        self.algo_container.setStyleSheet(f"""
             QFrame {{
-                background: {Colors.BG_CARD};
-                border-radius: 12px;
-                border-left: 4px solid {'#10b981' if REAL_METER_AVAILABLE else '#f59e0b'};
+                background: {Colors.BG_DARKER};
                 border: 1px solid {Colors.BORDER};
+                border-radius: 8px;
+            }}
+        """)
+        self.algo_grid = QGridLayout(self.algo_container)
+        self.algo_grid.setContentsMargins(16, 16, 16, 16)
+        self.algo_grid.setSpacing(12)
+        
+        placeholder = QLabel("Bir algoritma turu secin")
+        placeholder.setStyleSheet(f"color: {Colors.TEXT_MUTED}; padding: 20px;")
+        placeholder.setAlignment(Qt.AlignCenter)
+        self.algo_grid.addWidget(placeholder, 0, 0)
+        
+        algo_row.addWidget(self.algo_container)
+        config_layout.addLayout(algo_row)
+        
+        # Row 3: Parameters
+        params_row = QHBoxLayout()
+        params_row.setSpacing(24)
+        
+        # Data sizes
+        size_group = QVBoxLayout()
+        size_label = QLabel("Veri Boyutlari (virgul ile):")
+        size_label.setStyleSheet(f"color: {Colors.TEXT_MAIN}; font-size: 12px;")
+        self.size_input = QLineEdit("100, 500, 1000, 2000")
+        self.size_input.setStyleSheet(self._input_style())
+        size_group.addWidget(size_label)
+        size_group.addWidget(self.size_input)
+        params_row.addLayout(size_group, 2)
+        
+        # Runs
+        runs_group = QVBoxLayout()
+        runs_label = QLabel("Tekrar Sayisi:")
+        runs_label.setStyleSheet(f"color: {Colors.TEXT_MAIN}; font-size: 12px;")
+        self.runs_spin = QSpinBox()
+        self.runs_spin.setRange(1, 10)
+        self.runs_spin.setValue(3)
+        self.runs_spin.setStyleSheet(self._input_style())
+        runs_group.addWidget(runs_label)
+        runs_group.addWidget(self.runs_spin)
+        params_row.addLayout(runs_group, 1)
+        
+        params_row.addStretch()
+        config_layout.addLayout(params_row)
+        
+        # Run Button
+        btn_row = QHBoxLayout()
+        
+        self.run_btn = QPushButton("ANALIZI BASLAT")
+        self.run_btn.setFixedHeight(48)
+        self.run_btn.setCursor(Qt.PointingHandCursor)
+        self.run_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 {Colors.PRIMARY}, stop:1 #7C3AED);
+                color: white; border: none; border-radius: 10px;
+                font-size: 14px; font-weight: bold; padding: 0 40px;
+            }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #5A7BFF, stop:1 #9B5CF7);
+            }}
+            QPushButton:disabled {{ background: {Colors.BORDER}; color: {Colors.TEXT_MUTED}; }}
+        """)
+        self.run_btn.clicked.connect(self.start_analysis)
+        btn_row.addWidget(self.run_btn)
+        
+        self.stop_btn = QPushButton("Durdur")
+        self.stop_btn.setFixedHeight(48)
+        self.stop_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: {Colors.DANGER}; color: white;
+                border: none; border-radius: 10px;
+                font-size: 14px; font-weight: bold; padding: 0 30px;
+            }}
+            QPushButton:hover {{ background: #DC2626; }}
+        """)
+        self.stop_btn.clicked.connect(self.stop_analysis)
+        self.stop_btn.setEnabled(False)
+        btn_row.addWidget(self.stop_btn)
+        
+        btn_row.addStretch()
+        config_layout.addLayout(btn_row)
+        
+        # Progress
+        self.progress_container = QWidget()
+        progress_layout = QVBoxLayout(self.progress_container)
+        progress_layout.setContentsMargins(0, 0, 0, 0)
+        progress_layout.setSpacing(4)
+        
+        self.status_label = QLabel("Hazir")
+        self.status_label.setStyleSheet(f"color: {Colors.TEXT_MUTED}; font-size: 12px;")
+        progress_layout.addWidget(self.status_label)
+        
+        self.progress = QProgressBar()
+        self.progress.setFixedHeight(10)
+        self.progress.setTextVisible(False)
+        self.progress.setStyleSheet(f"""
+            QProgressBar {{ background: {Colors.BG_DARKER}; border: none; border-radius: 5px; }}
+            QProgressBar::chunk {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 {Colors.ACCENT}, stop:1 {Colors.PRIMARY});
+                border-radius: 5px;
+            }}
+        """)
+        progress_layout.addWidget(self.progress)
+        
+        self.progress_container.hide()
+        config_layout.addWidget(self.progress_container)
+        
+        layout.addWidget(config_card)
+        
+        # === RESULTS SECTION ===
+        self.results_card = self._create_card()
+        results_layout = QVBoxLayout(self.results_card)
+        results_layout.setContentsMargins(24, 24, 24, 24)
+        results_layout.setSpacing(16)
+        
+        results_title = QLabel("Sonuclar ve Grafikler")
+        results_title.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {Colors.ACCENT};")
+        results_layout.addWidget(results_title)
+        
+        # Tabs for different charts
+        self.tabs = QTabWidget()
+        self.tabs.setStyleSheet(f"""
+            QTabWidget::pane {{
+                border: 1px solid {Colors.BORDER};
+                border-radius: 8px;
+                background: {Colors.BG_DARKER};
+            }}
+            QTabBar::tab {{
+                background: {Colors.BG_DARKER};
+                color: {Colors.TEXT_MUTED};
+                padding: 10px 20px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }}
+            QTabBar::tab:selected {{
+                background: {Colors.BG_CARD};
+                color: {Colors.ACCENT};
             }}
         """)
         
-        status_layout = QHBoxLayout(status_frame)
-        status_layout.setContentsMargins(16, 16, 16, 16)
+        # Tab 1: Bar Charts
+        bar_tab = QWidget()
+        bar_layout = QVBoxLayout(bar_tab)
+        bar_layout.setContentsMargins(16, 16, 16, 16)
         
-        status_icon = QLabel("✅" if REAL_METER_AVAILABLE else "⚠️")
-        status_icon.setStyleSheet("font-size: 24px; background: transparent; border: none;")
+        bar_controls = QHBoxLayout()
+        bar_metric_label = QLabel("Metrik:")
+        bar_metric_label.setStyleSheet(f"color: {Colors.TEXT_MAIN};")
+        self.bar_metric_combo = QComboBox()
+        self.bar_metric_combo.addItem("Sure (ms)", "time")
+        self.bar_metric_combo.addItem("Enerji (J)", "energy")
+        self.bar_metric_combo.addItem("Bellek (MB)", "memory")
+        self.bar_metric_combo.setStyleSheet(self._combo_style())
+        self.bar_metric_combo.currentIndexChanged.connect(self.update_bar_chart)
+        bar_controls.addWidget(bar_metric_label)
+        bar_controls.addWidget(self.bar_metric_combo)
+        bar_controls.addStretch()
+        bar_layout.addLayout(bar_controls)
         
-        status_text = QLabel(
-            "LibreHardwareMonitor hazır - Gerçek ölçüm yapılabilir" 
-            if REAL_METER_AVAILABLE else 
-            "LibreHardwareMonitor bulunamadı - Tahmin modu kullanılacak"
-        )
-        status_text.setStyleSheet(f"font-size: 14px; font-weight: 500; color: {Colors.TEXT_MAIN}; background: transparent; border: none;")
+        self.bar_chart = ChartWidget()
+        self.bar_chart.setMinimumHeight(300)
+        bar_layout.addWidget(self.bar_chart)
         
-        status_layout.addWidget(status_icon)
-        status_layout.addWidget(status_text)
-        status_layout.addStretch()
+        self.tabs.addTab(bar_tab, "Karsilastirma")
         
-        layout.addWidget(status_frame)
+        # Tab 2: Line Charts (Scaling)
+        line_tab = QWidget()
+        line_layout = QVBoxLayout(line_tab)
+        line_layout.setContentsMargins(16, 16, 16, 16)
         
-        # Config panel
-        config = QFrame()
-        config.setStyleSheet(Styles.CARD)
+        line_controls = QHBoxLayout()
+        line_metric_label = QLabel("Metrik:")
+        line_metric_label.setStyleSheet(f"color: {Colors.TEXT_MAIN};")
+        self.line_metric_combo = QComboBox()
+        self.line_metric_combo.addItem("Sure (ms)", "time")
+        self.line_metric_combo.addItem("Enerji (J)", "energy")
+        self.line_metric_combo.addItem("Bellek (MB)", "memory")
+        self.line_metric_combo.setStyleSheet(self._combo_style())
+        self.line_metric_combo.currentIndexChanged.connect(self.update_line_chart)
+        line_controls.addWidget(line_metric_label)
+        line_controls.addWidget(self.line_metric_combo)
+        line_controls.addStretch()
+        line_layout.addLayout(line_controls)
         
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(20)
-        shadow.setYOffset(4)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        config.setGraphicsEffect(shadow)
+        self.line_chart = ChartWidget()
+        self.line_chart.setMinimumHeight(300)
+        line_layout.addWidget(self.line_chart)
         
-        config_layout = QVBoxLayout(config)
-        config_layout.setContentsMargins(24, 24, 24, 24)
-        config_layout.setSpacing(16)
+        self.tabs.addTab(line_tab, "Olcekleme")
         
-        config_title = QLabel("⚙️ Ölçüm Yapılandırması")
-        config_title.setStyleSheet(f"font-size: 18px; font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
-        config_layout.addWidget(config_title)
+        # Tab 3: Pie Chart
+        pie_tab = QWidget()
+        pie_layout = QVBoxLayout(pie_tab)
+        pie_layout.setContentsMargins(16, 16, 16, 16)
         
-        # Form
-        form = QHBoxLayout()
-        form.setSpacing(20)
+        self.pie_chart = ChartWidget()
+        self.pie_chart.setMinimumHeight(300)
+        pie_layout.addWidget(self.pie_chart)
         
-        # Algorithm
-        algo_layout = QVBoxLayout()
-        algo_label = QLabel("Algoritma:")
-        algo_label.setStyleSheet(f"font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
+        self.tabs.addTab(pie_tab, "Enerji Dagilimi")
         
-        self.algo_combo = QComboBox()
-        self.algo_combo.setStyleSheet(Styles.COMBOBOX)
-        self.algo_combo.setMinimumWidth(250)
+        # Tab 4: Table
+        table_tab = QWidget()
+        table_layout = QVBoxLayout(table_tab)
+        table_layout.setContentsMargins(16, 16, 16, 16)
         
-        categories = [
-            ('sorting', '🔀'),
-            ('searching', '🔍'),
-            ('divide_conquer', '⚔️'),
-            ('dynamic_programming', '🧩'),
-            ('greedy', '🎲')
-        ]
+        self.results_table = QTableWidget()
+        self.results_table.setStyleSheet(f"""
+            QTableWidget {{
+                background: {Colors.BG_DARKER};
+                color: {Colors.TEXT_MAIN};
+                border: none;
+                gridline-color: {Colors.BORDER};
+            }}
+            QTableWidget::item {{ padding: 8px; }}
+            QHeaderView::section {{
+                background: {Colors.BG_CARD};
+                color: {Colors.TEXT_MAIN};
+                padding: 10px;
+                border: none;
+                font-weight: bold;
+            }}
+        """)
+        table_layout.addWidget(self.results_table)
         
-        for cat_key, icon in categories:
-            for key, info in ALGORITHMS.get(cat_key, {}).items():
-                self.algo_combo.addItem(f"{icon} {info['name']}", key)
+        self.tabs.addTab(table_tab, "Veri Tablosu")
         
-        algo_layout.addWidget(algo_label)
-        algo_layout.addWidget(self.algo_combo)
-        
-        # Data size
-        size_layout = QVBoxLayout()
-        size_label = QLabel("Veri Boyutu:")
-        size_label.setStyleSheet(f"font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
-        
-        self.size_spin = QSpinBox()
-        self.size_spin.setStyleSheet(Styles.INPUT_FIELD)
-        self.size_spin.setRange(100, 50000)
-        self.size_spin.setValue(1000)
-        
-        size_layout.addWidget(size_label)
-        size_layout.addWidget(self.size_spin)
-        
-        # Runs
-        runs_layout = QVBoxLayout()
-        runs_label = QLabel("Çalıştırma:")
-        runs_label.setStyleSheet(f"font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
-        
-        self.runs_spin = QSpinBox()
-        self.runs_spin.setStyleSheet(Styles.INPUT_FIELD)
-        self.runs_spin.setRange(1, 10)
-        self.runs_spin.setValue(3)
-        
-        runs_layout.addWidget(runs_label)
-        runs_layout.addWidget(self.runs_spin)
-        
-        form.addLayout(algo_layout)
-        form.addLayout(size_layout)
-        form.addLayout(runs_layout)
-        form.addStretch()
-        
-        config_layout.addLayout(form)
-        
-        # Progress
-        self.progress = QProgressBar()
-        self.progress.setStyleSheet(Styles.PROGRESS_BAR)
-        self.progress.setVisible(False)
-        config_layout.addWidget(self.progress)
-        
-        # Buttons
-        btn_layout = QHBoxLayout()
-        
-        self.start_btn = QPushButton("🔋  Ölçümü Başlat")
-        self.start_btn.setStyleSheet(Styles.BUTTON_SUCCESS)
-        self.start_btn.setMinimumSize(180, 48)
-        self.start_btn.setCursor(Qt.PointingHandCursor)
-        self.start_btn.clicked.connect(self.start_measurement)
-        
-        self.stop_btn = QPushButton("⏹️  Durdur")
-        self.stop_btn.setStyleSheet(Styles.BUTTON_DANGER)
-        self.stop_btn.setMinimumSize(100, 48)
-        self.stop_btn.setEnabled(False)
-        self.stop_btn.clicked.connect(self.stop_measurement)
-        
-        btn_layout.addWidget(self.start_btn)
-        btn_layout.addWidget(self.stop_btn)
-        btn_layout.addStretch()
-        
-        config_layout.addLayout(btn_layout)
-        layout.addWidget(config)
-        
-        # Log panel
-        log_frame = QFrame()
-        log_frame.setStyleSheet(Styles.CARD)
-        
-        log_layout = QVBoxLayout(log_frame)
-        log_layout.setContentsMargins(20, 20, 20, 20)
-        
-        log_title = QLabel("📝 Ölçüm Logu")
-        log_title.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {Colors.TEXT_MAIN}; border: none;")
+        # Tab 5: Log
+        log_tab = QWidget()
+        log_layout = QVBoxLayout(log_tab)
+        log_layout.setContentsMargins(16, 16, 16, 16)
         
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setStyleSheet(Styles.LOG_TEXT)
-        self.log_text.setMinimumHeight(250)
-        self.log_text.append("🔋 Gerçek Enerji Ölçümü hazır.")
-        self.log_text.append("📝 Bir algoritma seçin ve ölçümü başlatın.")
-        
-        log_layout.addWidget(log_title)
+        self.log_text.setStyleSheet(f"""
+            QTextEdit {{
+                background: {Colors.BG_DARKER};
+                color: {Colors.ACCENT};
+                border: none;
+                border-radius: 8px;
+                padding: 12px;
+                font-family: Consolas, monospace;
+                font-size: 12px;
+            }}
+        """)
+        self.log_text.setPlaceholderText("Analiz loglari burada gorunecek...")
         log_layout.addWidget(self.log_text)
         
-        layout.addWidget(log_frame)
-        layout.addStretch()
+        self.tabs.addTab(log_tab, "Log")
+        
+        results_layout.addWidget(self.tabs)
+        layout.addWidget(self.results_card)
         
         scroll.setWidget(content)
         
@@ -349,42 +711,230 @@ class RealEnergyPage(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(scroll)
     
-    def start_measurement(self):
-        algo_key = self.algo_combo.currentData()
-        if not algo_key:
+    def _create_card(self):
+        card = QFrame()
+        card.setStyleSheet(f"""
+            QFrame {{
+                background: {Colors.BG_CARD};
+                border-radius: 12px;
+                border: 1px solid {Colors.BORDER};
+            }}
+        """)
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 40))
+        shadow.setOffset(0, 3)
+        card.setGraphicsEffect(shadow)
+        return card
+    
+    def _type_btn_style(self, color):
+        return f"""
+            QPushButton {{
+                background: {Colors.BG_DARKER};
+                color: {Colors.TEXT_MAIN};
+                border: 2px solid {Colors.BORDER};
+                border-radius: 8px;
+                padding: 10px 20px;
+                font-weight: 500;
+            }}
+            QPushButton:hover {{ border-color: {color}; }}
+            QPushButton:checked {{
+                border-color: {color};
+                background: rgba({self._hex_to_rgb(color)}, 0.15);
+                color: {color};
+            }}
+        """
+    
+    def _hex_to_rgb(self, hex_color):
+        hex_color = hex_color.lstrip('#')
+        return ', '.join(str(int(hex_color[i:i+2], 16)) for i in (0, 2, 4))
+    
+    def _small_btn_style(self, color):
+        return f"""
+            QPushButton {{
+                background: transparent;
+                color: {color};
+                border: 1px solid {color};
+                border-radius: 6px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }}
+            QPushButton:hover {{ background: {color}; color: white; }}
+            QPushButton:disabled {{ border-color: {Colors.BORDER}; color: {Colors.TEXT_MUTED}; }}
+        """
+    
+    def _input_style(self):
+        return f"""
+            QLineEdit, QSpinBox {{
+                background: {Colors.BG_DARKER};
+                color: {Colors.TEXT_MAIN};
+                border: 1px solid {Colors.BORDER};
+                border-radius: 8px;
+                padding: 10px 14px;
+                font-size: 13px;
+            }}
+            QLineEdit:focus, QSpinBox:focus {{ border-color: {Colors.ACCENT}; }}
+        """
+    
+    def _combo_style(self):
+        return f"""
+            QComboBox {{
+                background: {Colors.BG_CARD};
+                color: {Colors.TEXT_MAIN};
+                border: 1px solid {Colors.BORDER};
+                border-radius: 6px;
+                padding: 8px 12px;
+                min-width: 120px;
+            }}
+            QComboBox::drop-down {{ border: none; width: 20px; }}
+            QComboBox::down-arrow {{
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 5px solid {Colors.ACCENT};
+            }}
+        """
+    
+    def select_type(self, type_key):
+        """Algoritma türü seçildiğinde"""
+        self.selected_type = type_key
+        
+        for k, btn in self.type_buttons.items():
+            btn.setChecked(k == type_key)
+        
+        # Clear existing checkboxes
+        self.algo_checkboxes.clear()
+        while self.algo_grid.count():
+            item = self.algo_grid.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        # Add algorithm checkboxes
+        algos = ALGORITHMS.get(type_key, {})
+        row, col = 0, 0
+        
+        for algo_key, info in algos.items():
+            cb = QCheckBox(info['name'])
+            cb.setProperty('algo_key', algo_key)
+            cb.setStyleSheet(f"""
+                QCheckBox {{
+                    color: {Colors.TEXT_MAIN};
+                    font-size: 13px;
+                    spacing: 8px;
+                }}
+                QCheckBox::indicator {{
+                    width: 18px; height: 18px;
+                    border: 2px solid {Colors.BORDER};
+                    border-radius: 4px;
+                }}
+                QCheckBox::indicator:checked {{
+                    background: {Colors.ACCENT};
+                    border-color: {Colors.ACCENT};
+                }}
+            """)
+            self.algo_checkboxes.append(cb)
+            self.algo_grid.addWidget(cb, row, col)
+            col += 1
+            if col > 2:
+                col = 0
+                row += 1
+        
+        self.select_all_btn.setEnabled(True)
+        self.clear_btn.setEnabled(True)
+    
+    def select_all_algos(self):
+        for cb in self.algo_checkboxes:
+            cb.setChecked(True)
+    
+    def clear_all_algos(self):
+        for cb in self.algo_checkboxes:
+            cb.setChecked(False)
+    
+    def start_analysis(self):
+        selected = [cb.property('algo_key') for cb in self.algo_checkboxes if cb.isChecked()]
+        
+        if not selected:
+            self.log_text.append("[!] En az bir algoritma secin!")
             return
         
-        self.start_btn.setEnabled(False)
+        try:
+            sizes = [int(s.strip()) for s in self.size_input.text().split(',')]
+        except:
+            self.log_text.append("[!] Gecersiz boyut formati!")
+            return
+        
+        runs = self.runs_spin.value()
+        
+        self.run_btn.setEnabled(False)
         self.stop_btn.setEnabled(True)
-        self.progress.setVisible(True)
+        self.progress_container.show()
         self.progress.setValue(0)
+        self.status_label.setText("Analiz baslatiliyor...")
+        self.log_text.clear()
         
-        self.log_text.append(f"\n{'='*40}")
+        self.worker = EnergyTestWorker(selected, sizes, runs)
+        self.worker.log_signal.connect(self.log_text.append)
+        self.worker.progress_signal.connect(self.update_progress)
+        self.worker.result_signal.connect(self.on_complete)
+        self.worker.start()
+    
+    def stop_analysis(self):
+        if self.worker:
+            self.worker.stop()
+            self.worker.wait()
+        self.reset_ui()
+        self.log_text.append("\n[!] Analiz durduruldu.")
+    
+    def update_progress(self, current, total, algo):
+        self.progress.setMaximum(total)
+        self.progress.setValue(current)
+        percent = int((current / total) * 100)
+        self.status_label.setText(f"Ilerleme: {current}/{total} ({percent}%) - {algo}")
+    
+    def on_complete(self, results):
+        self.reset_ui()
+        self.results_data = results
         
-        self.runner = RealMeasurementRunner(
-            algo_key, 
-            self.size_spin.value(),
-            self.runs_spin.value()
-        )
-        self.runner.progress.connect(self.progress.setValue)
-        self.runner.log.connect(self.log_text.append)
-        self.runner.result.connect(self.on_complete)
-        self.runner.start()
-    
-    def stop_measurement(self):
-        if self.runner:
-            self.runner.stop()
-            self.runner.wait()
-        self.reset_ui()
-        self.log_text.append("\n⏹️ Ölçüm durduruldu.")
-    
-    def on_complete(self, result):
-        self.reset_ui()
+        if results:
+            self.status_label.setText("Tamamlandi!")
+            self.status_label.setStyleSheet(f"color: {Colors.SUCCESS}; font-size: 12px;")
+            self.update_all_charts()
+            self.update_table()
+            self.tabs.setCurrentIndex(0)
     
     def reset_ui(self):
-        self.start_btn.setEnabled(True)
+        self.run_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
-        self.progress.setVisible(False)
+    
+    def update_all_charts(self):
+        self.update_bar_chart()
+        self.update_line_chart()
+        self.pie_chart.plot_pie_energy(self.results_data)
+    
+    def update_bar_chart(self):
+        metric = self.bar_metric_combo.currentData()
+        self.bar_chart.plot_bar_comparison(self.results_data, metric, 'Algoritma Karsilastirmasi')
+    
+    def update_line_chart(self):
+        metric = self.line_metric_combo.currentData()
+        self.line_chart.plot_line_scaling(self.results_data, metric)
+    
+    def update_table(self):
+        if not self.results_data:
+            return
+        
+        cols = ['Algoritma', 'Karmasiklik', 'Ort. Sure (ms)', 'Ort. Enerji (J)', 'Ort. Bellek (KB)']
+        self.results_table.setColumnCount(len(cols))
+        self.results_table.setHorizontalHeaderLabels(cols)
+        self.results_table.setRowCount(len(self.results_data))
+        
+        for i, (key, info) in enumerate(self.results_data.items()):
+            self.results_table.setItem(i, 0, QTableWidgetItem(info.get('name', key)))
+            self.results_table.setItem(i, 1, QTableWidgetItem(info.get('complexity_time', 'N/A')))
+            self.results_table.setItem(i, 2, QTableWidgetItem(f"{info.get('avg_time', 0):.4f}"))
+            self.results_table.setItem(i, 3, QTableWidgetItem(f"{info.get('avg_energy', 0):.6f}"))
+            self.results_table.setItem(i, 4, QTableWidgetItem(f"{info.get('avg_memory', 0):.2f}"))
+        
+        self.results_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
     
     def refresh(self):
         pass

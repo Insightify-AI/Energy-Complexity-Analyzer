@@ -14,7 +14,6 @@ from PyQt5.QtGui import QFont
 
 from gui.styles import Styles, Colors
 from gui.pages.home import HomePage
-from gui.pages.test_runner import TestRunnerPage
 from gui.pages.comparison import ComparisonPage
 from gui.pages.history import HistoryPage
 from gui.pages.real_energy import RealEnergyPage
@@ -26,8 +25,12 @@ class MainWindow(QMainWindow):
         
     def init_ui(self):
         self.setWindowTitle("Algoritma Analizi Platformu")
-        self.setFixedSize(1000, 800)  # Fixed size - no resizing
+        self.resize(1100, 800)  # Resizable window
+        self.setMinimumSize(900, 600)
         self.setStyleSheet(Styles.MAIN_WINDOW)
+        
+        # Track fullscreen state
+        self.is_fullscreen = False
         
         # Main Container
         main_widget = QWidget()
@@ -72,13 +75,36 @@ class MainWindow(QMainWindow):
         
         # Menu Items
         self.add_nav_button(nav_layout, "🏠 Ana Sayfa", 0)
-        self.add_nav_button(nav_layout, "🚀 Test", 1)
+        self.add_nav_button(nav_layout, "⚡ Enerji Analizi", 1)
         self.add_nav_button(nav_layout, "📊 Karşılaştır", 2)
-        self.add_nav_button(nav_layout, "⚡ Enerji", 3)
-        self.add_nav_button(nav_layout, "📜 Geçmiş", 4)
+        self.add_nav_button(nav_layout, "📜 Geçmiş", 3)
         
         header_layout.addWidget(nav_container)
         header_layout.addStretch()
+        
+        # Fullscreen Toggle Button
+        self.fullscreen_btn = QPushButton("⛶")
+        self.fullscreen_btn.setToolTip("Tam Ekran (F11)")
+        self.fullscreen_btn.setCursor(Qt.PointingHandCursor)
+        self.fullscreen_btn.setFixedSize(36, 36)
+        self.fullscreen_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {Colors.BG_CARD};
+                color: {Colors.TEXT_MUTED};
+                border: 1px solid {Colors.BORDER};
+                border-radius: 8px;
+                font-size: 16px;
+            }}
+            QPushButton:hover {{
+                background-color: {Colors.PRIMARY};
+                color: white;
+                border-color: {Colors.PRIMARY};
+            }}
+        """)
+        self.fullscreen_btn.clicked.connect(self.toggle_fullscreen)
+        header_layout.addWidget(self.fullscreen_btn)
+        
+        header_layout.addSpacing(10)
         
         # Version Badge
         version = QLabel("v2.1.0")
@@ -115,17 +141,15 @@ class MainWindow(QMainWindow):
         
         # Pages
         self.home_page = HomePage()
-        self.test_page = TestRunnerPage()
+        self.energy_page = RealEnergyPage()
         self.compare_page = ComparisonPage()
-        self.real_energy_page = RealEnergyPage()
         self.history_page = HistoryPage()
         
         # Add pages to stack
         self.stack.addWidget(self.home_page)        # Index 0
-        self.stack.addWidget(self.test_page)        # Index 1
+        self.stack.addWidget(self.energy_page)      # Index 1
         self.stack.addWidget(self.compare_page)     # Index 2
-        self.stack.addWidget(self.real_energy_page) # Index 3
-        self.stack.addWidget(self.history_page)     # Index 4
+        self.stack.addWidget(self.history_page)     # Index 3
         
         content_layout.addWidget(self.stack)
         main_layout.addWidget(content_container)
@@ -174,5 +198,27 @@ class MainWindow(QMainWindow):
         # Refresh page if needed
         if index == 2: # Comparison
             self.compare_page.load_results()
-        elif index == 4: # History
+        elif index == 3: # History
             self.history_page.load_history()
+    
+    def toggle_fullscreen(self):
+        """Toggle fullscreen mode"""
+        if self.is_fullscreen:
+            self.showNormal()
+            self.fullscreen_btn.setText("⛶")
+            self.fullscreen_btn.setToolTip("Tam Ekran (F11)")
+            self.is_fullscreen = False
+        else:
+            self.showFullScreen()
+            self.fullscreen_btn.setText("⛶")
+            self.fullscreen_btn.setToolTip("Normal Boyut (F11)")
+            self.is_fullscreen = True
+    
+    def keyPressEvent(self, event):
+        """Handle keyboard shortcuts"""
+        if event.key() == Qt.Key_F11:
+            self.toggle_fullscreen()
+        elif event.key() == Qt.Key_Escape and self.is_fullscreen:
+            self.toggle_fullscreen()
+        else:
+            super().keyPressEvent(event)

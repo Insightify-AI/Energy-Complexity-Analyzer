@@ -21,7 +21,11 @@ class Colors:
     # Metin Renkleri
     TEXT_MAIN = "#FFFFFF"     # Pure White
     TEXT_MUTED = "#94A3B8"    # Muted Blue-Grey
+    TEXT_SECONDARY = "#94A3B8"  # Alias for TEXT_MUTED
     TEXT_HIGHLIGHT = "#4CC9F0" # Cyan for highlights
+    
+    # Ek Arka Planlar
+    BG_TERTIARY = "#1A1F2E"    # Slightly lighter than BG_CARD
     
     # Kenarlıklar
     BORDER = "#2A303C"        # Subtle Border
