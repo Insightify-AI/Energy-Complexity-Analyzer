@@ -384,16 +384,6 @@ Uygulama, analiz sonuçlarını içeren profesyonel PDF raporları oluşturabili
 
 Bu proje MIT Lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
 
----
-
-## 👨‍💻 Geliştirici
-
-**Fatih Korkmaz**
-
-- 📧 E-posta: [your-email@example.com]
-- 🔗 GitHub: [github.com/your-username]
-
----
 
 <div align="center">
 
