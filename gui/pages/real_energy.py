@@ -12,7 +12,8 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QScrollArea, QCheckBox, QSpinBox, QPushButton, QProgressBar,
     QTextEdit, QGridLayout, QComboBox, QLineEdit, QGraphicsDropShadowEffect,
-    QTableWidget, QTableWidgetItem, QHeaderView, QTabWidget, QSplitter
+    QTableWidget, QTableWidgetItem, QHeaderView, QTabWidget, QSplitter,
+    QFileDialog, QMessageBox
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QColor, QFont
@@ -31,6 +32,7 @@ try:
     import matplotlib
     matplotlib.use('Qt5Agg')
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_pdf import PdfPages
     from matplotlib.figure import Figure
     import matplotlib.pyplot as plt
     HAS_MATPLOTLIB = True
@@ -812,6 +814,131 @@ class RealEnergyPage(QWidget):
         
         self.tabs.addTab(log_tab, "Log")
         
+        # Tab 7: PDF Report
+        pdf_tab = QWidget()
+        pdf_layout = QVBoxLayout(pdf_tab)
+        pdf_layout.setContentsMargins(24, 24, 24, 24)
+        pdf_layout.setSpacing(20)
+        
+        # Header
+        pdf_header = QLabel("📄 PDF Rapor Oluştur")
+        pdf_header.setStyleSheet(f"""
+            font-size: 20px; 
+            font-weight: bold; 
+            color: {Colors.ACCENT};
+        """)
+        pdf_layout.addWidget(pdf_header)
+        
+        pdf_desc = QLabel("Test sonuçlarını detaylı grafikler ve tablolarla PDF formatında indirin.")
+        pdf_desc.setStyleSheet(f"color: {Colors.TEXT_MUTED}; font-size: 13px;")
+        pdf_layout.addWidget(pdf_desc)
+        
+        # Report Options
+        options_frame = QFrame()
+        options_frame.setStyleSheet(f"""
+            QFrame {{
+                background: {Colors.BG_DARKER};
+                border-radius: 12px;
+                border: 1px solid {Colors.BORDER};
+            }}
+        """)
+        options_layout = QVBoxLayout(options_frame)
+        options_layout.setContentsMargins(20, 20, 20, 20)
+        options_layout.setSpacing(16)
+        
+        options_title = QLabel("📋 Rapora Dahil Edilecekler")
+        options_title.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {Colors.TEXT_MAIN};")
+        options_layout.addWidget(options_title)
+        
+        # Checkboxes for report content
+        self.pdf_include_summary = QCheckBox("Özet Bilgiler ve İstatistikler")
+        self.pdf_include_summary.setChecked(True)
+        self.pdf_include_summary.setStyleSheet(self._pdf_checkbox_style())
+        options_layout.addWidget(self.pdf_include_summary)
+        
+        self.pdf_include_bar = QCheckBox("Karşılaştırma Grafikleri (Bar Chart)")
+        self.pdf_include_bar.setChecked(True)
+        self.pdf_include_bar.setStyleSheet(self._pdf_checkbox_style())
+        options_layout.addWidget(self.pdf_include_bar)
+        
+        self.pdf_include_line = QCheckBox("Ölçekleme Grafikleri (Line Chart)")
+        self.pdf_include_line.setChecked(True)
+        self.pdf_include_line.setStyleSheet(self._pdf_checkbox_style())
+        options_layout.addWidget(self.pdf_include_line)
+        
+        self.pdf_include_pie = QCheckBox("Enerji Dağılımı (Pie Chart)")
+        self.pdf_include_pie.setChecked(True)
+        self.pdf_include_pie.setStyleSheet(self._pdf_checkbox_style())
+        options_layout.addWidget(self.pdf_include_pie)
+        
+        self.pdf_include_table = QCheckBox("Detaylı Veri Tablosu")
+        self.pdf_include_table.setChecked(True)
+        self.pdf_include_table.setStyleSheet(self._pdf_checkbox_style())
+        options_layout.addWidget(self.pdf_include_table)
+        
+        pdf_layout.addWidget(options_frame)
+        
+        # Preview info
+        preview_frame = QFrame()
+        preview_frame.setStyleSheet(f"""
+            QFrame {{
+                background: {Colors.BG_CARD};
+                border-radius: 12px;
+                border: 1px solid {Colors.BORDER};
+            }}
+        """)
+        preview_layout = QVBoxLayout(preview_frame)
+        preview_layout.setContentsMargins(20, 20, 20, 20)
+        preview_layout.setSpacing(12)
+        
+        preview_title = QLabel("📊 Rapor Önizleme")
+        preview_title.setStyleSheet(f"font-size: 14px; font-weight: bold; color: {Colors.TEXT_MAIN};")
+        preview_layout.addWidget(preview_title)
+        
+        self.pdf_status_label = QLabel("⚠️ Rapor oluşturmak için önce bir test çalıştırın.")
+        self.pdf_status_label.setStyleSheet(f"color: {Colors.TEXT_MUTED}; font-size: 12px;")
+        self.pdf_status_label.setWordWrap(True)
+        preview_layout.addWidget(self.pdf_status_label)
+        
+        pdf_layout.addWidget(preview_frame)
+        
+        # Download Button
+        btn_row = QHBoxLayout()
+        
+        self.pdf_download_btn = QPushButton("📥  PDF İndir")
+        self.pdf_download_btn.setFixedHeight(50)
+        self.pdf_download_btn.setCursor(Qt.PointingHandCursor)
+        self.pdf_download_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #10B981, stop:1 #059669);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-size: 15px;
+                font-weight: bold;
+                padding: 0 40px;
+            }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #059669, stop:1 #047857);
+            }}
+            QPushButton:disabled {{
+                background: {Colors.BORDER};
+                color: {Colors.TEXT_MUTED};
+            }}
+        """)
+        self.pdf_download_btn.clicked.connect(self.generate_pdf_report)
+        self.pdf_download_btn.setEnabled(False)
+        btn_row.addWidget(self.pdf_download_btn)
+        
+        btn_row.addStretch()
+        pdf_layout.addLayout(btn_row)
+        
+        pdf_layout.addStretch()
+        
+        self.tabs.addTab(pdf_tab, "📄 PDF Rapor")
+        
         results_layout.addWidget(self.tabs)
         layout.addWidget(self.results_card)
         
@@ -1030,6 +1157,15 @@ class RealEnergyPage(QWidget):
             self.update_table()
             self.populate_runs_combos()
             self.tabs.setCurrentIndex(0)
+            
+            # Enable PDF download
+            self.pdf_download_btn.setEnabled(True)
+            algo_count = len(results)
+            self.pdf_status_label.setText(
+                f"✅ Rapor hazır! {algo_count} algoritma analizi sonucu PDF olarak indirilebilir.\n"
+                f"📅 Tarih: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+            )
+            self.pdf_status_label.setStyleSheet(f"color: {Colors.SUCCESS}; font-size: 12px;")
     
     def reset_ui(self):
         self.run_btn.setEnabled(True)
@@ -1202,6 +1338,272 @@ class RealEnergyPage(QWidget):
                     energy_label.setText(f"{avg_energy * 1000:.2f} mJ")
                 else:
                     energy_label.setText(f"{avg_energy:.4f} J")
+    
+    def _pdf_checkbox_style(self):
+        return f"""
+            QCheckBox {{
+                color: {Colors.TEXT_MAIN};
+                font-size: 13px;
+                spacing: 10px;
+            }}
+            QCheckBox::indicator {{
+                width: 20px;
+                height: 20px;
+                border: 2px solid {Colors.BORDER};
+                border-radius: 6px;
+                background: {Colors.BG_CARD};
+            }}
+            QCheckBox::indicator:checked {{
+                background: {Colors.SUCCESS};
+                border-color: {Colors.SUCCESS};
+            }}
+            QCheckBox::indicator:hover {{
+                border-color: {Colors.ACCENT};
+            }}
+        """
+    
+    def generate_pdf_report(self):
+        """PDF rapor oluştur ve kaydet"""
+        if not self.results_data:
+            QMessageBox.warning(self, "Uyarı", "Rapor oluşturmak için önce bir test çalıştırın!")
+            return
+        
+        if not HAS_MATPLOTLIB:
+            QMessageBox.warning(self, "Uyarı", "PDF oluşturmak için matplotlib gerekli!")
+            return
+        
+        # Dosya kaydetme dialogu
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        default_name = f"Algoritma_Analiz_Raporu_{timestamp}.pdf"
+        
+        filepath, _ = QFileDialog.getSaveFileName(
+            self, 
+            "PDF Rapor Kaydet", 
+            default_name,
+            "PDF Dosyası (*.pdf)"
+        )
+        
+        if not filepath:
+            return
+        
+        try:
+            with PdfPages(filepath) as pdf:
+                # Sayfa 1: Başlık ve Özet
+                if self.pdf_include_summary.isChecked():
+                    fig = plt.figure(figsize=(11, 8.5))
+                    fig.patch.set_facecolor('#1a1a2e')
+                    
+                    # Başlık
+                    fig.text(0.5, 0.92, '⚡ Algoritma Enerji Analizi Raporu', 
+                            fontsize=24, fontweight='bold', ha='center', color='white')
+                    fig.text(0.5, 0.87, f'Oluşturulma Tarihi: {datetime.now().strftime("%d.%m.%Y %H:%M")}',
+                            fontsize=12, ha='center', color='#a0a0a0')
+                    
+                    # Özet bilgiler
+                    summary_text = f"""
+                    ANALIZ OZETI
+                    ═══════════════════════════════════════
+                    
+                    Toplam Algoritma Sayisi: {len(self.results_data)}
+                    
+                    """
+                    
+                    y_pos = 0.75
+                    for key, info in self.results_data.items():
+                        summary_text += f"""
+    {info.get('name', key)}
+    ├─ Karmasiklik: {info.get('complexity_time', 'N/A')}
+    ├─ Ortalama Sure: {info.get('avg_time', 0):.4f} ms
+    ├─ Ortalama Enerji: {info.get('avg_energy', 0):.6f} J
+    └─ Ortalama Bellek: {info.get('avg_memory', 0):.2f} KB
+                        """
+                    
+                    fig.text(0.1, 0.7, summary_text, fontsize=10, va='top', 
+                            color='white', family='monospace')
+                    
+                    pdf.savefig(fig, facecolor=fig.get_facecolor())
+                    plt.close(fig)
+                
+                # Sayfa 2: Bar Chart - Süre Karşılaştırması
+                if self.pdf_include_bar.isChecked():
+                    for metric, label in [('time', 'Calisma Suresi (ms)'), 
+                                         ('energy', 'Enerji Tuketimi (J)'),
+                                         ('memory', 'Bellek Kullanimi (KB)')]:
+                        fig, ax = plt.subplots(figsize=(11, 8.5))
+                        fig.patch.set_facecolor('#1a1a2e')
+                        ax.set_facecolor('#1a1a2e')
+                        
+                        names = []
+                        values = []
+                        colors = ['#4CC9F0', '#F72585', '#4361EE', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
+                        
+                        for key, info in self.results_data.items():
+                            names.append(info.get('name', key))
+                            if metric == 'time':
+                                values.append(info.get('avg_time', 0))
+                            elif metric == 'energy':
+                                values.append(info.get('avg_energy', 0))
+                            else:
+                                values.append(info.get('avg_memory', 0))
+                        
+                        bars = ax.barh(range(len(names)), values, color=colors[:len(names)], height=0.6)
+                        ax.set_yticks(range(len(names)))
+                        ax.set_yticklabels(names, fontsize=11, color='white')
+                        ax.invert_yaxis()
+                        
+                        ax.set_xlabel(label, color='white', fontsize=12)
+                        ax.set_title(f'Algoritma Karsilastirmasi - {label}', 
+                                    color='white', fontsize=14, fontweight='bold', pad=20)
+                        
+                        ax.tick_params(axis='x', colors='white')
+                        ax.spines['top'].set_visible(False)
+                        ax.spines['right'].set_visible(False)
+                        ax.spines['left'].set_visible(False)
+                        ax.spines['bottom'].set_color('#2A303C')
+                        ax.grid(axis='x', alpha=0.2, color='#2A303C')
+                        
+                        for bar, val in zip(bars, values):
+                            ax.annotate(f'{val:.4f}', 
+                                       xy=(bar.get_width(), bar.get_y() + bar.get_height()/2),
+                                       xytext=(5, 0), textcoords='offset points',
+                                       ha='left', va='center', color='white', fontsize=9)
+                        
+                        plt.tight_layout()
+                        pdf.savefig(fig, facecolor=fig.get_facecolor())
+                        plt.close(fig)
+                
+                # Sayfa 3: Line Chart - Ölçekleme
+                if self.pdf_include_line.isChecked():
+                    fig, ax = plt.subplots(figsize=(11, 8.5))
+                    fig.patch.set_facecolor('#1a1a2e')
+                    ax.set_facecolor('#1a1a2e')
+                    
+                    colors = ['#4CC9F0', '#F72585', '#4361EE', '#10B981', '#F59E0B', '#EF4444']
+                    color_idx = 0
+                    
+                    for key, info in self.results_data.items():
+                        sizes = info.get('sizes', {})
+                        if not sizes:
+                            continue
+                        
+                        x = sorted(sizes.keys())
+                        y = [sizes[s].get('avg_time', 0) for s in x]
+                        
+                        ax.plot(x, y, 'o-', color=colors[color_idx % len(colors)], 
+                               label=info.get('name', key), linewidth=2, markersize=8)
+                        color_idx += 1
+                    
+                    ax.set_xlabel('Veri Boyutu (n)', color='white', fontsize=12)
+                    ax.set_ylabel('Calisma Suresi (ms)', color='white', fontsize=12)
+                    ax.set_title('Olcekleme Analizi', color='white', fontsize=14, fontweight='bold', pad=20)
+                    
+                    ax.tick_params(colors='white')
+                    ax.spines['top'].set_visible(False)
+                    ax.spines['right'].set_visible(False)
+                    ax.spines['left'].set_color('#2A303C')
+                    ax.spines['bottom'].set_color('#2A303C')
+                    ax.grid(alpha=0.2, color='#2A303C')
+                    ax.legend(loc='upper left', fontsize=10, facecolor='#1a1a2e', 
+                             edgecolor='#2A303C', labelcolor='white')
+                    
+                    plt.tight_layout()
+                    pdf.savefig(fig, facecolor=fig.get_facecolor())
+                    plt.close(fig)
+                
+                # Sayfa 4: Pie Chart - Enerji Dağılımı
+                if self.pdf_include_pie.isChecked():
+                    fig, ax = plt.subplots(figsize=(11, 8.5))
+                    fig.patch.set_facecolor('#1a1a2e')
+                    ax.set_facecolor('#1a1a2e')
+                    
+                    names = []
+                    values = []
+                    colors = ['#4CC9F0', '#F72585', '#4361EE', '#10B981', '#F59E0B', '#EF4444']
+                    
+                    for key, info in self.results_data.items():
+                        names.append(info.get('name', key))
+                        values.append(info.get('avg_energy', 0))
+                    
+                    if values and sum(values) > 0:
+                        wedges, texts, autotexts = ax.pie(
+                            values, labels=names, autopct='%1.1f%%',
+                            colors=colors[:len(names)],
+                            textprops={'color': 'white', 'fontsize': 11}
+                        )
+                        for autotext in autotexts:
+                            autotext.set_color('white')
+                            autotext.set_fontweight('bold')
+                        
+                        ax.set_title('Enerji Tuketimi Dagilimi', 
+                                    color='white', fontsize=14, fontweight='bold', pad=20)
+                    
+                    plt.tight_layout()
+                    pdf.savefig(fig, facecolor=fig.get_facecolor())
+                    plt.close(fig)
+                
+                # Sayfa 5: Veri Tablosu
+                if self.pdf_include_table.isChecked():
+                    fig = plt.figure(figsize=(11, 8.5))
+                    fig.patch.set_facecolor('#1a1a2e')
+                    ax = fig.add_subplot(111)
+                    ax.axis('off')
+                    
+                    # Tablo verisi
+                    table_data = []
+                    for key, info in self.results_data.items():
+                        table_data.append([
+                            info.get('name', key),
+                            info.get('complexity_time', 'N/A'),
+                            f"{info.get('avg_time', 0):.4f}",
+                            f"{info.get('avg_energy', 0):.6f}",
+                            f"{info.get('avg_memory', 0):.2f}"
+                        ])
+                    
+                    columns = ['Algoritma', 'Karmasiklik', 'Sure (ms)', 'Enerji (J)', 'Bellek (KB)']
+                    
+                    table = ax.table(
+                        cellText=table_data,
+                        colLabels=columns,
+                        loc='center',
+                        cellLoc='center'
+                    )
+                    table.auto_set_font_size(False)
+                    table.set_fontsize(10)
+                    table.scale(1.2, 2)
+                    
+                    # Tablo stili
+                    for i in range(len(columns)):
+                        table[(0, i)].set_facecolor('#4361EE')
+                        table[(0, i)].set_text_props(color='white', fontweight='bold')
+                    
+                    for i in range(1, len(table_data) + 1):
+                        for j in range(len(columns)):
+                            table[(i, j)].set_facecolor('#2a2a4e')
+                            table[(i, j)].set_text_props(color='white')
+                    
+                    fig.text(0.5, 0.92, 'Detayli Sonuc Tablosu', 
+                            fontsize=16, fontweight='bold', ha='center', color='white')
+                    
+                    plt.tight_layout()
+                    pdf.savefig(fig, facecolor=fig.get_facecolor())
+                    plt.close(fig)
+            
+            # Başarılı mesajı
+            QMessageBox.information(
+                self, 
+                "Başarılı", 
+                f"PDF rapor başarıyla oluşturuldu!\n\n📄 {filepath}"
+            )
+            
+            self.log_text.append(f"\n[OK] PDF rapor olusturuldu: {filepath}")
+            
+        except Exception as e:
+            QMessageBox.critical(
+                self, 
+                "Hata", 
+                f"PDF oluşturulurken hata oluştu:\n{str(e)}"
+            )
+            self.log_text.append(f"\n[X] PDF olusturma hatasi: {str(e)}")
     
     def refresh(self):
         pass
