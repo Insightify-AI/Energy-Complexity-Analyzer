@@ -1,69 +1,133 @@
+<p align="center">
+  <img src="assets/platforma giriş.png" alt="Algoritma Enerji Analizi Platformu" width="100%"/>
+</p>
+
+<div align="center">
+
 # ⚡ Algoritma Enerji Analizi Platformu
 
-**Modern PyQt5 Tabanlı Algoritma Performans ve Enerji Tüketimi Analiz Uygulaması**
+### Modern PyQt5 Tabanlı Algoritma Performans ve Enerji Tüketimi Analiz Uygulaması
 
-Bu platform, çeşitli algoritmaların çalışma süresini, bellek kullanımını ve **gerçek enerji tüketimini** ölçerek karşılaştırmalı analiz yapmanızı sağlar.
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![PyQt5](https://img.shields.io/badge/PyQt5-5.15%2B-41CD52?style=for-the-badge&logo=qt&logoColor=white)](https://pypi.org/project/PyQt5/)
+[![License](https://img.shields.io/badge/Lisans-MIT-blue?style=for-the-badge)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+
+**Çeşitli algoritmaların çalışma süresini, bellek kullanımını ve gerçek enerji tüketimini ölçerek karşılaştırmalı analiz yapmanızı sağlayan kapsamlı bir platform.**
+
+[🚀 Kurulum](#-kurulum) • [📖 Kullanım](#-kullanım) • [🧮 Algoritmalar](#-desteklenen-algoritmalar) • [📊 Test Sonuçları](#-test-sonuçları) • [📸 Ekran Görüntüleri](#-ekran-görüntüleri)
+
+</div>
 
 ---
 
 ## 📋 İçindekiler
 
-- [Özellikler](#-özellikler)
-- [Ekran Görüntüleri](#-ekran-görüntüleri)
-- [Sistem Gereksinimleri](#-sistem-gereksinimleri)
-- [Kurulum](#-kurulum)
-- [Kullanım](#-kullanım)
-- [Desteklenen Algoritmalar](#-desteklenen-algoritmalar)
-- [Enerji Ölçüm Yöntemleri](#-enerji-ölçüm-yöntemleri)
-- [Proje Yapısı](#-proje-yapısı)
-- [Geliştirici Notları](#-geliştirici-notları)
-- [Lisans](#-lisans)
+<details>
+<summary>📑 Tüm Bölümleri Göster</summary>
+
+- [🎯 Proje Hakkında](#-proje-hakkında)
+- [✨ Özellikler](#-özellikler)
+- [💻 Sistem Gereksinimleri](#-sistem-gereksinimleri)
+- [🔧 Kurulum](#-kurulum)
+- [📖 Kullanım](#-kullanım)
+- [🧮 Desteklenen Algoritmalar](#-desteklenen-algoritmalar)
+  - [Böl ve Yönet](#-böl-ve-yönet-divide--conquer)
+  - [Dinamik Programlama](#-dinamik-programlama-dynamic-programming)
+  - [Açgözlü Algoritmalar](#-açgözlü-algoritmalar-greedy)
+- [📊 Test Sonuçları](#-test-sonuçları)
+  - [Böl ve Yönet Sonuçları](#böl-ve-yönet-test-sonuçları)
+  - [Dinamik Programlama Sonuçları](#dinamik-programlama-test-sonuçları)
+  - [Açgözlü Algoritma Sonuçları](#açgözlü-algoritma-test-sonuçları)
+- [⚡ Enerji Ölçüm Sistemi](#-enerji-ölçüm-sistemi)
+- [📸 Ekran Görüntüleri](#-ekran-görüntüleri)
+- [📁 Proje Yapısı](#-proje-yapısı)
+- [🛠️ Geliştirici Notları](#️-geliştirici-notları)
+- [🐛 Sorun Giderme](#-sorun-giderme)
+- [📝 Sürüm Geçmişi](#-sürüm-geçmişi)
+- [🤝 Katkıda Bulunma](#-katkıda-bulunma)
+- [📄 Lisans](#-lisans)
+
+</details>
 
 ---
 
-## 🚀 Özellikler
+## 🎯 Proje Hakkında
 
-### Ana Özellikler
-- **Gerçek Enerji Ölçümü**: LibreHardwareMonitor ile gerçek CPU/GPU güç tüketimi ölçümü
-- **Algoritma Karşılaştırma**: Farklı algoritmaları yan yana karşılaştırma
-- **Detaylı Metrikler**: Çalışma süresi, bellek kullanımı ve enerji tüketimi
-- **Görsel Grafikler**: Matplotlib ile interaktif performans grafikleri
-- **PDF Raporlama**: Analiz sonuçlarını PDF olarak dışa aktarma
-- **Test Geçmişi**: Önceki test sonuçlarını kaydetme ve görüntüleme
+**Algoritma Enerji Analizi Platformu**, farklı algoritma paradigmalarını (Böl ve Yönet, Dinamik Programlama, Açgözlü) performans ve enerji verimliliği açısından karşılaştırmanıza olanak tanıyan kapsamlı bir analiz aracıdır.
 
-### Arayüz Özellikleri
-- Modern ve karanlık tema tasarımı
-- Tam ekran desteği (F11)
-- Responsive layout
-- Kolay navigasyon
+### 🌟 Neden Bu Platform?
+
+Modern yazılım geliştirmede sadece algoritma karmaşıklığı değil, aynı zamanda **enerji verimliliği** de kritik öneme sahiptir. Özellikle:
+
+- 📱 **Mobil cihazlar** için pil ömrü optimizasyonu
+- 🌍 **Yeşil bilişim** ve karbon ayak izi azaltma
+- 💰 **Bulut maliyetlerini** düşürme
+- 🔋 **Gömülü sistemler** için enerji yönetimi
+
+Bu platform, **LibreHardwareMonitor** entegrasyonu sayesinde **gerçek donanım güç tüketimini** ölçerek size en verimli algoritmayı seçmenizde yardımcı olur.
+
+---
+
+## ✨ Özellikler
+
+<p align="center">
+  <img src="assets/platform özellikleri.png" alt="Platform Özellikleri" width="80%"/>
+</p>
+
+### 🔋 Ana Özellikler
+
+| Özellik | Açıklama |
+|---------|----------|
+| ⚡ **Gerçek Enerji Ölçümü** | LibreHardwareMonitor ile CPU/GPU güç tüketimi (Watt/Joule) |
+| 📊 **Görsel Grafikler** | Matplotlib ile interaktif bar, line ve pie chartlar |
+| 🔄 **Çoklu Test** | Aynı anda birden fazla algoritma ve veri boyutu testi |
+| 📄 **PDF Raporlama** | Profesyonel analiz raporları oluşturma |
+| 💾 **Test Geçmişi** | Tüm test sonuçlarını JSON formatında kaydetme |
+| 🎨 **Modern Arayüz** | Karanlık tema, responsive tasarım |
+
+### 🖥️ Arayüz Özellikleri
+
+- 🌙 **Karanlık Tema** - Göz yorgunluğunu azaltan modern tasarım
+- 📱 **Responsive Layout** - Farklı ekran boyutlarına uyum
+- ⌨️ **Klavye Kısayolları** - F11 tam ekran, ESC çıkış
+- 🔔 **Gerçek Zamanlı Log** - İşlem durumu takibi
+- 📈 **5 Farklı Grafik Tipi** - Karşılaştırma, ölçekleme, dağılım, veri tablosu, log
 
 ---
 
 ## 💻 Sistem Gereksinimleri
 
 ### Minimum Gereksinimler
-- **İşletim Sistemi**: Windows 10/11 (64-bit)
-- **Python**: 3.8 veya üzeri
-- **RAM**: 4 GB
-- **Disk Alanı**: 100 MB
 
-### Gerçek Enerji Ölçümü İçin (Opsiyonel)
-- **LibreHardwareMonitor**: [İndir](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases)
-  - Yönetici olarak çalıştırılmalıdır
-  - WMI desteği aktif olmalıdır
+| Bileşen | Gereksinim |
+|---------|------------|
+| **İşletim Sistemi** | Windows 10/11 (64-bit) |
+| **Python** | 3.8 veya üzeri |
+| **RAM** | 4 GB |
+| **Disk Alanı** | 100 MB |
+| **Ekran** | 1280x720 minimum |
+
+### Gerçek Enerji Ölçümü İçin (Önerilen)
+
+| Yazılım | Açıklama |
+|---------|----------|
+| **LibreHardwareMonitor** | [İndir](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases) |
+| | ⚠️ Yönetici olarak çalıştırılmalı |
+| | ⚠️ Arka planda açık kalmalı |
 
 ---
 
 ## 🔧 Kurulum
 
-### 1. Depoyu Klonlayın veya İndirin
+### 1️⃣ Depoyu Klonlayın
 
 ```bash
-git clone https://github.com/your-username/python_energy.git
+git clone https://github.com/Insightify-AI/python_energy.git
 cd python_energy
 ```
 
-### 2. Sanal Ortam Oluşturun (Önerilen)
+### 2️⃣ Sanal Ortam Oluşturun (Önerilen)
 
 ```bash
 # Windows
@@ -75,19 +139,25 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 3. Bağımlılıkları Yükleyin
+### 3️⃣ Bağımlılıkları Yükleyin
 
 ```bash
-pip install PyQt5 matplotlib
+pip install -r requirements.txt
 ```
 
-**Tüm Bağımlılıklar (requirements.txt):**
-```
-PyQt5>=5.15.0
-matplotlib>=3.5.0
+**Veya manuel kurulum:**
+```bash
+pip install PyQt5>=5.15.0 matplotlib>=3.5.0 wmi pywin32 reportlab
 ```
 
-### 4. Uygulamayı Başlatın
+### 4️⃣ LibreHardwareMonitor Kurulumu (Opsiyonel)
+
+1. [Resmi GitHub sayfasından](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases) indirin
+2. ZIP dosyasını çıkarın
+3. `LibreHardwareMonitor.exe` dosyasını **yönetici olarak** çalıştırın
+4. Arka planda çalışır durumda bırakın
+
+### 5️⃣ Uygulamayı Başlatın
 
 ```bash
 python run_app.py
@@ -104,28 +174,29 @@ cd python_energy
 python run_app.py
 ```
 
-### Navigasyon
+### 📑 Sayfalar
 
 Uygulama 4 ana sayfadan oluşur:
 
-| Sayfa | Açıklama |
-|-------|----------|
-| 🏠 **Ana Sayfa** | Dashboard ve genel bilgiler |
-| ⚡ **Enerji Analizi** | Algoritma seçimi ve enerji tüketimi ölçümü |
-| 📊 **Karşılaştır** | Farklı algoritmaları karşılaştırma |
-| 📜 **Geçmiş** | Önceki test sonuçlarını görüntüleme |
+| Sayfa | Açıklama | Kısayol |
+|-------|----------|---------|
+| 🏠 **Ana Sayfa** | Dashboard, istatistikler ve hızlı erişim | - |
+| ⚡ **Enerji Analizi** | Algoritma seçimi ve test yapılandırması | - |
+| 📊 **Karşılaştır** | Önceki testleri karşılaştırma | - |
+| 📜 **Geçmiş** | Test geçmişi ve sonuçlar | - |
 
-### Enerji Analizi Yapma
+### 🧪 Test Yapma Adımları
 
 1. **Enerji Analizi** sayfasına gidin
-2. Test etmek istediğiniz **algoritmaları** seçin
-3. **Veri boyutlarını** belirleyin
-4. **Çalıştırma sayısını** ayarlayın (güvenilir sonuçlar için 3-5 önerilir)
-5. **"Analiz Başlat"** butonuna tıklayın
-6. Sonuçları grafik ve tablo olarak görüntüleyin
-7. İsterseniz **PDF raporu** oluşturun
+2. **Algoritma türünü** seçin (Böl ve Yönet / Dinamik Programlama / Açgözlü)
+3. Test etmek istediğiniz **algoritmaları** işaretleyin
+4. **Veri boyutlarını** girin (örn: 100, 500, 1000, 2000)
+5. **Tekrar sayısını** belirleyin (güvenilir sonuçlar için 3-5 önerilir)
+6. **"Analizi Başlat"** butonuna tıklayın
+7. Sonuçları grafik ve tablo olarak görüntüleyin
+8. İsterseniz **PDF raporu** oluşturun
 
-### Klavye Kısayolları
+### ⌨️ Klavye Kısayolları
 
 | Tuş | İşlev |
 |-----|-------|
@@ -136,63 +207,439 @@ Uygulama 4 ana sayfadan oluşur:
 
 ## 🧮 Desteklenen Algoritmalar
 
-### Böl ve Yönet (Divide & Conquer)
-| Algoritma | Zaman Karmaşıklığı | Alan Karmaşıklığı |
-|-----------|-------------------|-------------------|
-| Merge Sort | O(n log n) | O(n) |
-| Quick Sort | O(n log n) | O(log n) |
-| Strassen Matrix | O(n^2.81) | O(n²) |
+<p align="center">
+  <img src="assets/desteklenen algoritmalar.png" alt="Desteklenen Algoritmalar" width="80%"/>
+</p>
 
-### Dinamik Programlama
-| Algoritma | Zaman Karmaşıklığı | Alan Karmaşıklığı |
-|-----------|-------------------|-------------------|
-| 0/1 Knapsack | O(n*W) | O(n*W) |
-| Floyd-Warshall | O(n³) | O(n²) |
-| Bellman-Ford | O(V*E) | O(V) |
-
-### Açgözlü (Greedy) Algoritmalar
-| Algoritma | Zaman Karmaşıklığı | Alan Karmaşıklığı |
-|-----------|-------------------|-------------------|
-| Dijkstra | O(V²) | O(V) |
-| Prim's MST | O(V²) | O(V) |
-| Huffman Coding | O(n log n) | O(n) |
+Platform, **3 ana kategori** altında **9 farklı algoritma** desteklemektedir:
 
 ---
 
-## ⚡ Enerji Ölçüm Yöntemleri
+### 🔀 Böl ve Yönet (Divide & Conquer)
 
-Platform 3 farklı enerji ölçüm yöntemi destekler:
+Büyük problemleri küçük alt problemlere bölerek çözen algoritmalar.
+
+#### 1. Merge Sort (Birleştirmeli Sıralama)
+
+<p align="center">
+  <img src="assets/böl ve yönet/merge sort.png" alt="Merge Sort" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(n log n) |
+| **Alan Karmaşıklığı** | O(n) |
+| **Kararlılık** | ✅ Kararlı (Stable) |
+| **Yerinde Sıralama** | ❌ Hayır |
+
+**Nasıl Çalışır:**
+1. Diziyi ortadan ikiye böl
+2. Her iki yarıyı rekürsif olarak sırala
+3. Sıralı iki yarıyı birleştir
+
+**Kullanım Alanları:**
+- Büyük veri setlerinin sıralanması
+- Dış sıralama (external sorting)
+- Linked list sıralaması
+- Paralel hesaplama
+
+**Avantajları:**
+- Her durumda O(n log n) performans
+- Kararlı sıralama
+- Büyük veriler için ideal
+
+**Dezavantajları:**
+- O(n) ekstra bellek gerektirir
+- Küçük dizilerde overhead
+
+---
+
+#### 2. Quick Sort (Hızlı Sıralama)
+
+<p align="center">
+  <img src="assets/böl ve yönet/quick sort.png" alt="Quick Sort" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(n log n) ortalama, O(n²) en kötü |
+| **Alan Karmaşıklığı** | O(log n) |
+| **Kararlılık** | ❌ Kararsız (Unstable) |
+| **Yerinde Sıralama** | ✅ Evet |
+
+**Nasıl Çalışır:**
+1. Bir pivot eleman seç
+2. Diziyi pivottan küçük ve büyük olarak ayır (partition)
+3. Alt dizileri rekürsif olarak sırala
+
+**Kullanım Alanları:**
+- Genel amaçlı sıralama
+- Önbellek dostu algoritmalar
+- Programlama dillerinin standart kütüphaneleri
+
+**Avantajları:**
+- Pratikte en hızlı sıralama algoritması
+- Yerinde sıralama (in-place)
+- Önbellek dostu
+
+**Dezavantajları:**
+- En kötü durumda O(n²)
+- Kararsız sıralama
+
+---
+
+#### 3. Strassen Matris Çarpımı
+
+<p align="center">
+  <img src="assets/böl ve yönet/strassen matrix.png" alt="Strassen Matrix" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(n^2.81) |
+| **Alan Karmaşıklığı** | O(n²) |
+| **Geleneksel Çarpım** | O(n³) |
+| **İyileştirme** | ~%30 daha hızlı |
+
+**Nasıl Çalışır:**
+1. Matrisleri 4 alt matrise böl
+2. 7 yardımcı matris hesapla (M1-M7)
+3. Sonuç matrisini yardımcı matrislerden oluştur
+
+**Kullanım Alanları:**
+- Büyük matris hesaplamaları
+- Bilimsel hesaplama
+- Makine öğrenmesi
+- Grafik işleme
+
+**Avantajları:**
+- Standart çarpımdan daha hızlı
+- Büyük matrisler için verimli
+
+**Dezavantajları:**
+- Küçük matrisler için verimsiz
+- Sayısal kararlılık sorunları
+
+---
+
+### 🧩 Dinamik Programlama (Dynamic Programming)
+
+Alt problemlerin çözümlerini saklayarak tekrar hesaplamayı önleyen algoritmalar.
+
+#### 1. 0/1 Knapsack (Sırt Çantası Problemi)
+
+<p align="center">
+  <img src="assets/dinamik programlama/knapsack.png" alt="Knapsack" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(n × W) |
+| **Alan Karmaşıklığı** | O(n × W) |
+| **Problem Tipi** | Optimizasyon |
+| **Yaklaşım** | Tabulation (Bottom-Up) |
+
+**Problem Tanımı:**
+- n adet eşya, her birinin değeri (v) ve ağırlığı (w) var
+- W kapasiteli bir çanta
+- Maksimum değeri elde etmek için hangi eşyalar seçilmeli?
+
+**Nasıl Çalışır:**
+1. 2D DP tablosu oluştur (n+1) × (W+1)
+2. Her hücreyi optimal alt problem çözümüyle doldur
+3. K[n][W] maksimum değeri verir
+
+**Kullanım Alanları:**
+- Kaynak tahsisi
+- Portföy optimizasyonu
+- Bütçe planlama
+- Kripto para madenciliği
+
+---
+
+#### 2. Floyd-Warshall
+
+<p align="center">
+  <img src="assets/dinamik programlama/floyd warshall.png" alt="Floyd Warshall" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(V³) |
+| **Alan Karmaşıklığı** | O(V²) |
+| **Problem Tipi** | En Kısa Yol |
+| **Negatif Ağırlık** | ✅ Destekler |
+
+**Problem Tanımı:**
+- Ağırlıklı bir grafta tüm düğüm çiftleri arasındaki en kısa yolları bul
+
+**Nasıl Çalışır:**
+1. Mesafe matrisini başlat
+2. Her ara düğüm k için tüm i-j çiftlerini kontrol et
+3. dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+
+**Kullanım Alanları:**
+- Harita uygulamaları
+- Ağ yönlendirme
+- Sosyal ağ analizi
+- Oyun AI pathfinding
+
+---
+
+#### 3. Bellman-Ford
+
+<p align="center">
+  <img src="assets/dinamik programlama/bellman ford.png" alt="Bellman Ford" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(V × E) |
+| **Alan Karmaşıklığı** | O(V) |
+| **Negatif Ağırlık** | ✅ Destekler |
+| **Negatif Döngü** | ✅ Tespit Eder |
+
+**Problem Tanımı:**
+- Tek kaynaklı en kısa yol problemi
+- Negatif ağırlıklı kenarları destekler
+
+**Nasıl Çalışır:**
+1. Mesafeleri sonsuz olarak başlat, kaynak = 0
+2. V-1 kez tüm kenarları gevşet (relax)
+3. Negatif döngü kontrolü yap
+
+**Kullanım Alanları:**
+- Arbitraj tespiti (finans)
+- Ağ protokolleri (RIP)
+- GPS navigasyon
+- Oyun haritaları
+
+---
+
+### 🎯 Açgözlü Algoritmalar (Greedy)
+
+Her adımda lokal olarak en iyi seçimi yapan algoritmalar.
+
+#### 1. Dijkstra
+
+<p align="center">
+  <img src="assets/açgözlü algoritmalar/dijkstra.png" alt="Dijkstra" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(V²) veya O((V+E) log V) |
+| **Alan Karmaşıklığı** | O(V) |
+| **Negatif Ağırlık** | ❌ Desteklemez |
+| **Veri Yapısı** | Priority Queue (Heap) |
+
+**Problem Tanımı:**
+- Tek kaynaklı en kısa yol
+- Pozitif ağırlıklı kenarlar
+
+**Nasıl Çalışır:**
+1. Mesafeleri sonsuz olarak başlat, kaynak = 0
+2. En küçük mesafeli ziyaret edilmemiş düğümü seç
+3. Komşuların mesafelerini güncelle
+4. Tüm düğümler ziyaret edilene kadar tekrarla
+
+**Kullanım Alanları:**
+- GPS navigasyon
+- Ağ yönlendirme (OSPF)
+- Robotik pathfinding
+- Oyun AI
+
+---
+
+#### 2. Prim's MST (Minimum Yayılan Ağaç)
+
+<p align="center">
+  <img src="assets/açgözlü algoritmalar/prim's mst.png" alt="Prim's MST" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(V²) veya O(E log V) |
+| **Alan Karmaşıklığı** | O(V) |
+| **Çıktı** | Minimum Spanning Tree |
+| **Veri Yapısı** | Priority Queue |
+
+**Problem Tanımı:**
+- Bağlı, ağırlıklı bir grafın minimum ağırlıklı yayılan ağacını bul
+
+**Nasıl Çalışır:**
+1. Rastgele bir düğümden başla
+2. MST'ye dahil olmayan en küçük ağırlıklı kenarı ekle
+3. Tüm düğümler dahil olana kadar tekrarla
+
+**Kullanım Alanları:**
+- Ağ tasarımı (kablo döşeme)
+- Kümeleme algoritmaları
+- Görüntü segmentasyonu
+- Elektrik şebekesi planlaması
+
+---
+
+#### 3. Huffman Coding
+
+<p align="center">
+  <img src="assets/açgözlü algoritmalar/huffman coding.png" alt="Huffman Coding" width="70%"/>
+</p>
+
+| Özellik | Değer |
+|---------|-------|
+| **Zaman Karmaşıklığı** | O(n log n) |
+| **Alan Karmaşıklığı** | O(n) |
+| **Sıkıştırma Tipi** | Kayıpsız (Lossless) |
+| **Kod Tipi** | Prefix-free |
+
+**Problem Tanımı:**
+- Karakter frekanslarına göre optimal prefix kodları oluştur
+
+**Nasıl Çalışır:**
+1. Frekans tablosu oluştur
+2. İki en küçük frekansı birleştirerek ağaç oluştur
+3. Sol dal = 0, sağ dal = 1 şeklinde kodla
+
+**Kullanım Alanları:**
+- Dosya sıkıştırma (ZIP, GZIP)
+- Görüntü formatları (JPEG)
+- Video sıkıştırma
+- Veri iletimi
+
+---
+
+## 📊 Test Sonuçları
+
+> **Test Koşulları:**
+> - Dizi Uzunluğu: **500 eleman**
+> - Tekrar Sayısı: **3**
+> - Platform: Windows 11
+> - İşlemci: Intel Core i5-1240P
+> - Enerji Ölçümü: LibreHardwareMonitor
+
+<p align="center">
+  <img src="assets/enerji analizi.png" alt="Enerji Analizi" width="80%"/>
+</p>
+
+---
+
+### Böl ve Yönet Test Sonuçları
+
+<p align="center">
+  <img src="assets/tablolar/böl ve yönet.png" alt="Böl ve Yönet Test Sonuçları" width="80%"/>
+</p>
+
+
+**📈 Analiz:**
+- **Merge Sort** en düşük enerji tüketimi ve en hızlı çalışma süresi
+- **Quick Sort** en az bellek kullanımı ancak en yüksek enerji tüketimi
+- **Strassen** matris işlemleri için optimize edilmiş
+
+---
+
+### Dinamik Programlama Test Sonuçları
+
+<p align="center">
+  <img src="assets/tablolar/dinamik programlama.png" alt="Dinamik Programlama Test Sonuçları" width="80%"/>
+</p>
+
+
+**📈 Analiz:**
+- **Bellman-Ford** en verimli dinamik programlama algoritması
+- **Floyd-Warshall** en yüksek zaman ve enerji tüketimi
+- **Knapsack** bellek kullanımında en yoğun
+
+---
+
+### Açgözlü Algoritma Test Sonuçları
+
+<p align="center">
+  <img src="assets/tablolar/açgözlü algoritmalar.png" alt="Açgözlü Algoritma Test Sonuçları" width="80%"/>
+</p>
+
+**📈 Analiz:**
+- **Huffman Coding** en verimli açgözlü algoritma
+- **Dijkstra** ve **Prim** benzer performans gösteriyor
+- Tüm açgözlü algoritmalar düşük bellek kullanımına sahip
+
+---
+
+## ⚡ Enerji Ölçüm Sistemi
+
+Platform **3 farklı enerji ölçüm yöntemi** destekler:
 
 ### 1. LibreHardwareMonitor (Önerilen - Gerçek Ölçüm)
+
 ```
-✅ Gerçek CPU/GPU güç tüketimi
-✅ Watt ve Joule cinsinden ölçüm
+✅ Gerçek CPU/GPU güç tüketimi (Watt)
+✅ Joule cinsinden enerji hesabı
+✅ CPU sıcaklığı takibi
 ✅ Anlık güç okuma
-⚠️ LibreHardwareMonitor kurulu olmalı
+⚠️ LibreHardwareMonitor kurulu ve çalışıyor olmalı
 ⚠️ Yönetici izni gerekli
 ```
 
+**Desteklenen Sensörler:**
+- CPU Package Power
+- CPU Cores Power
+- CPU Platform Power
+- GPU Power
+- Battery Discharge Rate
+
 ### 2. Intel Power Gadget
+
 ```
-✅ Intel işlemciler için doğru ölçüm
+✅ Intel işlemciler için RAPL okuma
+✅ Yüksek hassasiyetli ölçüm
 ⚠️ Sadece Intel CPU'lar
 ⚠️ Ayrı kurulum gerekli
 ```
 
 ### 3. Tahmini Ölçüm (Fallback)
+
 ```
 ✅ Her zaman çalışır
-✅ CPU kullanımına dayalı tahmin
+✅ Sabit 25W varsayımı
 ⚠️ Gerçek değerler değil tahmini
 ```
 
 ### LibreHardwareMonitor Kurulumu
 
-1. [Resmi siteden](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases) indirin
-2. Zip dosyasını çıkarın
-3. `LibreHardwareMonitor.exe` dosyasını **yönetici olarak** çalıştırın
-4. **Options > Remote Web Server** seçeneğini aktif edin (opsiyonel)
-5. Uygulamayı arka planda çalışır durumda bırakın
+1. [GitHub Releases](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases) sayfasından indirin
+2. ZIP dosyasını çıkarın
+3. `LibreHardwareMonitor.exe` → Sağ tık → **Yönetici olarak çalıştır**
+4. Uygulama arka planda çalışırken Python uygulamasını başlatın
+
+**Doğrulama:**
+Test başlattığınızda log'da şunu görmelisiniz:
+```
+[OK] LibreHardwareMonitor: GERCEK OLCUM AKTIF
+```
+
+---
+
+## 📸 Ekran Görüntüleri
+
+### Ana Sayfa (Dashboard)
+<p align="center">
+  <img src="assets/platforma giriş.png" alt="Ana Sayfa" width="80%"/>
+</p>
+
+### Enerji Analizi
+<p align="center">
+  <img src="assets/enerji analizi.png" alt="Enerji Analizi" width="80%"/>
+</p>
+
+### Algoritma Seçimi
+<p align="center">
+  <img src="assets/desteklenen algoritmalar.png" alt="Algoritmalar" width="80%"/>
+</p>
+
+### Sonuç Karşılaştırması
+<p align="center">
+  <img src="assets/algoritma sonucu karşılaştırması.png" alt="Karşılaştırma" width="80%"/>
+</p>
 
 ---
 
@@ -200,67 +647,36 @@ Platform 3 farklı enerji ölçüm yöntemi destekler:
 
 ```
 python_energy/
+│
 ├── 📄 run_app.py              # Ana başlatıcı dosya
-├── 📄 algorithms.py           # Algoritma implementasyonları
-├── 📄 energy_meter.py         # Enerji ölçüm modülü
-├── 📄 real_power_meter.py     # Gerçek güç ölçümü (LibreHWM)
-├── 📄 real_energy_meter.py    # Gerçek enerji ölçümü
-├── 📄 run_benchmark.py        # Benchmark çalıştırıcı
-├── 📄 run_real_benchmark.py   # Gerçek ölçüm benchmark
-├── 📄 measure_for_php.py      # PHP API entegrasyonu
+├── 📄 algorithms.py           # 9 algoritma implementasyonu
+├── 📄 energy_meter.py         # Temel enerji ölçüm modülü
+├── 📄 real_energy_meter.py    # LibreHardwareMonitor entegrasyonu
+├── 📄 real_power_meter.py     # Gerçek güç ölçümü
+├── 📄 requirements.txt        # Python bağımlılıkları
+├── 📄 README.md               # Bu dosya
+├── 📄 LICENSE                 # MIT Lisansı
 │
 ├── 📂 gui/                    # Grafik arayüz modülleri
 │   ├── __init__.py
-│   ├── main_window.py         # Ana pencere
-│   ├── styles.py              # Stil tanımlamaları
+│   ├── main_window.py         # Ana pencere sınıfı
+│   ├── styles.py              # Renk ve stil tanımları
 │   │
 │   └── 📂 pages/              # Sayfa modülleri
-│       ├── home.py            # Ana sayfa
+│       ├── home.py            # Ana sayfa (Dashboard)
 │       ├── real_energy.py     # Enerji analizi sayfası
 │       ├── comparison.py      # Karşılaştırma sayfası
 │       └── history.py         # Geçmiş sayfası
 │
+├── 📂 assets/                 # Görseller ve kaynaklar
+│   ├── 📂 böl ve yönet/       # Böl-Yönet algoritma görselleri
+│   ├── 📂 dinamik programlama/# DP algoritma görselleri
+│   └── 📂 açgözlü algoritmalar/# Greedy algoritma görselleri
+│
 ├── 📂 results/                # Test sonuçları (JSON)
-│   ├── energy_analysis_*.json
-│   └── energy_summary_*.txt
+│   └── energy_analysis_*.json
 │
 └── 📂 _archive/               # Arşivlenmiş dosyalar
-```
-
----
-
-## 🔬 Teknik Detaylar
-
-### Metrik Açıklamaları
-
-| Metrik | Açıklama | Birim |
-|--------|----------|-------|
-| Çalışma Süresi | Algoritmanın toplam yürütme süresi | ms (milisaniye) |
-| Bellek Kullanımı | İşlem sırasında kullanılan bellek | MB (megabyte) |
-| Enerji Tüketimi | Toplam tüketilen enerji | mJ (milijoule) |
-| Güç (Watts) | Ortalama güç tüketimi | W (watt) |
-| CPU Kullanımı | İşlemci kullanım yüzdesi | % |
-
-### Veri Formatı
-
-Sonuçlar JSON formatında kaydedilir:
-
-```json
-{
-  "timestamp": "2024-12-06T22:30:04",
-  "algorithms": ["merge_sort", "quick_sort"],
-  "data_sizes": [1000, 5000, 10000],
-  "runs_per_test": 3,
-  "results": [
-    {
-      "algorithm": "merge_sort",
-      "data_size": 1000,
-      "execution_time_ms": 2.45,
-      "energy_joules": 0.0012,
-      "memory_mb": 0.85
-    }
-  ]
-}
 ```
 
 ---
@@ -273,12 +689,14 @@ Sonuçlar JSON formatında kaydedilir:
 
 ```python
 def my_algorithm(data: List[int]) -> Tuple[Any, AlgorithmMetrics]:
+    """Algoritma açıklaması"""
     metrics = AlgorithmMetrics()
     
-    # Algoritmayı uygula ve metrikleri topla
-    result = ...
-    metrics.comparisons += 1
-    metrics.iterations += 1
+    # Algoritma implementasyonu
+    for item in data:
+        metrics.iterations += 1
+        metrics.comparisons += 1
+        # ...
     
     return result, metrics
 ```
@@ -301,14 +719,17 @@ ALGORITHMS = {
 
 ### Stil Özelleştirme
 
-`gui/styles.py` dosyasından renk ve stil ayarlarını değiştirebilirsiniz:
+`gui/styles.py` dosyasından renkleri değiştirin:
 
 ```python
 class Colors:
     PRIMARY = "#4A9FF5"       # Ana renk
+    ACCENT = "#4CC9F0"        # Vurgu rengi  
     BG_DARK = "#0D1B2A"       # Arka plan
-    TEXT_MAIN = "#E0E6ED"     # Ana metin rengi
-    # ...
+    BG_CARD = "#1B2838"       # Kart arka planı
+    TEXT_MAIN = "#E0E6ED"     # Ana metin
+    SUCCESS = "#10B981"       # Başarı rengi
+    DANGER = "#EF4444"        # Hata rengi
 ```
 
 ---
@@ -317,46 +738,35 @@ class Colors:
 
 ### Sık Karşılaşılan Sorunlar
 
-#### "Eksik bağımlılıklar" hatası
+#### ❌ "ModuleNotFoundError: No module named 'PyQt5'"
+
 ```bash
-pip install PyQt5 matplotlib
+pip install PyQt5
 ```
 
-#### LibreHardwareMonitor bağlantı hatası
-- LibreHardwareMonitor'u **yönetici olarak** çalıştırdığınızdan emin olun
-- Uygulamanın arka planda çalıştığını kontrol edin
+#### ❌ LibreHardwareMonitor bağlantı hatası
 
-#### Ölçek/Bulanıklık sorunu
-- Windows DPI ayarlarını kontrol edin
-- Uygulama otomatik DPI ölçekleme kullanır
+1. LibreHardwareMonitor'u **yönetici olarak** çalıştırın
+2. Uygulamanın arka planda açık olduğundan emin olun
+3. Windows Güvenlik Duvarı'nı kontrol edin
 
-#### Bellek hatası (büyük veri setlerinde)
-- Daha küçük veri boyutları kullanın
+#### ❌ "Gerçek ölçüm yok" uyarısı
+
+Log'da `[!] LibreHardwareMonitor: YOK` görüyorsanız:
+1. LibreHardwareMonitor'u başlatın
+2. Python uygulamasını yeniden başlatın
+
+#### ❌ Bellek hatası (büyük veri setlerinde)
+
+- Daha küçük veri boyutları kullanın (≤2000)
 - Aynı anda daha az algoritma test edin
+- Python'u 64-bit olarak çalıştırın
 
----
+#### ❌ Grafik görüntülenmiyor
 
-## 📊 Örnek Çıktılar
-
-### Konsol Çıktısı
+```bash
+pip install matplotlib
 ```
-==================================================
-[*] Algoritma Analizi Platformu
-    Python Edition v2.0
-==================================================
-
-[OK] Bağımlılıklar kontrol edildi
-[...] Uygulama başlatılıyor...
-
-[OK] Uygulama başlatıldı!
-[*] Dashboard açıldı.
-```
-
-### PDF Rapor
-Uygulama, analiz sonuçlarını içeren profesyonel PDF raporları oluşturabilir:
-- Algoritma performans grafikleri
-- Detaylı metrik tabloları
-- Karşılaştırmalı analiz
 
 ---
 
@@ -364,31 +774,84 @@ Uygulama, analiz sonuçlarını içeren profesyonel PDF raporları oluşturabili
 
 | Sürüm | Tarih | Değişiklikler |
 |-------|-------|---------------|
-| v2.1.0 | 2024-12 | Çalıştırma bazlı analiz, PDF raporlama |
-| v2.0.0 | 2024-12 | PyQt5 arayüz, gerçek enerji ölçümü |
-| v1.0.0 | 2024-11 | İlk sürüm |
+| **v2.2.0** | 2025-12-20 | LibreHardwareMonitor gerçek enerji ölçümü |
+| **v2.1.0** | 2025-12-15 | Çalıştırma bazlı analiz, PDF raporlama |
+| **v2.0.0** | 2025-12-10 | PyQt5 arayüz, görsel grafikler |
+| **v1.0.0** | 2025-11-01 | İlk sürüm |
 
 ---
 
 ## 🤝 Katkıda Bulunma
 
-1. Projeyi fork edin
+Katkılarınızı memnuniyetle karşılıyoruz! 
+
+1. Projeyi **fork** edin
 2. Feature branch oluşturun (`git checkout -b feature/YeniOzellik`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Yeni özellik eklendi'`)
-4. Branch'i push edin (`git push origin feature/YeniOzellik`)
-5. Pull Request oluşturun
+3. Değişikliklerinizi **commit** edin (`git commit -m 'Yeni özellik eklendi'`)
+4. Branch'i **push** edin (`git push origin feature/YeniOzellik`)
+5. **Pull Request** oluşturun
+
+### Katkı Rehberi
+
+- Kod stilini koruyun
+- Türkçe yorum ve docstring kullanın
+- Test ekleyin
+- README'yi güncelleyin
 
 ---
 
 ## 📄 Lisans
 
-Bu proje MIT Lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
+Bu proje **MIT Lisansı** altında lisanslanmıştır.
 
+```
+MIT License
+
+Copyright (c) 2025 Insightify AI
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
 
 <div align="center">
 
-**⚡ Algoritma Enerji Analizi Platformu ⚡**
+## ⭐ Projeyi Beğendiyseniz
 
-*Performans ve enerji verimliliği için*
+Bu projeyi faydalı bulduysanız, **yıldız** vererek destek olabilirsiniz!
+
+[![Star](https://img.shields.io/github/stars/Insightify-AI/python_energy?style=social)](https://github.com/Insightify-AI/python_energy)
+
+---
+
+### 📫 İletişim
+
+[![GitHub](https://img.shields.io/badge/GitHub-Insightify-AI-181717?style=for-the-badge&logo=github)](https://github.com/Insightify-AI)
+
+---
+
+<p align="center">
+  <b>⚡ Algoritma Enerji Analizi Platformu ⚡</b>
+  <br>
+  <i>Performans ve enerji verimliliği için</i>
+  <br><br>
+  Made with ❤️ by Insightify AI
+</p>
 
 </div>
