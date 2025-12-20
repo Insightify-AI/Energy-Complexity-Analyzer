@@ -430,18 +430,22 @@ class WMIPowerMeter:
 
 class LibreHardwareMonitorMeter:
     """
-    LibreHardwareMonitor API kullanarak enerji ölçümü
+    LibreHardwareMonitor API kullanarak GERÇEK enerji ölçümü
     LibreHardwareMonitor kurulu ve çalışıyor olmalı
     """
     
     def __init__(self):
         self.available = self._check_availability()
+        self._wmi = None
     
     def _check_availability(self) -> bool:
         try:
             import wmi
             w = wmi.WMI(namespace="root\\LibreHardwareMonitor")
-            return True
+            # Sensör var mı kontrol et
+            sensors = w.Sensor()
+            power_sensors = [s for s in sensors if s.SensorType == 'Power']
+            return len(power_sensors) > 0
         except:
             return False
     
@@ -464,6 +468,139 @@ class LibreHardwareMonitorMeter:
             return data
         except:
             return {}
+    
+    def get_current_power(self) -> Tuple[float, Dict]:
+        """
+        Anlık toplam güç tüketimini al (Watt)
+        Returns: (total_power, details_dict)
+        """
+        power_data = self.get_power_data()
+        if not power_data:
+            return 0.0, {}
+        
+        # CPU Package Power veya toplam güç bul
+        total_power = 0.0
+        if 'CPU Package' in power_data:
+            total_power = power_data['CPU Package']
+        elif 'CPU Platform' in power_data:
+            total_power = power_data['CPU Platform']
+        else:
+            # Tüm güç değerlerini topla (GPU hariç çift sayma olmasın)
+            for name, value in power_data.items():
+                if 'Package' in name or 'Platform' in name:
+                    total_power += value
+        
+        return total_power, power_data
+    
+    def get_temperature(self) -> float:
+        """CPU sıcaklığını al"""
+        try:
+            import wmi
+            w = wmi.WMI(namespace="root\\LibreHardwareMonitor")
+            
+            for sensor in w.Sensor():
+                if sensor.SensorType == 'Temperature' and 'Core' in sensor.Name:
+                    return float(sensor.Value)
+        except:
+            pass
+        return 0.0
+    
+    def measure(self, func: Callable, *args,
+                sampling_interval_ms: int = 50,
+                **kwargs) -> 'RealEnergyResult':
+        """
+        Fonksiyonu çalıştırıp LibreHardwareMonitor ile GERÇEK enerji tüketimini ölç
+        
+        Not: WMI thread-safe olmadığı için, çalıştırma öncesi ve sonrası güç değerleri
+        alınarak ortalama hesaplanır.
+        """
+        if not self.available:
+            return self._create_error_result("LibreHardwareMonitor kullanılamıyor")
+        
+        power_samples = []
+        temp_samples = []
+        
+        # Başlangıç ölçümü
+        start_power, _ = self.get_current_power()
+        start_temp = self.get_temperature()
+        if start_power > 0:
+            power_samples.append(start_power)
+        if start_temp > 0:
+            temp_samples.append(start_temp)
+        
+        # Fonksiyonu çalıştır
+        start_time = time.perf_counter()
+        try:
+            result = func(*args, **kwargs)
+        finally:
+            end_time = time.perf_counter()
+        
+        # Bitiş ölçümü
+        end_power, _ = self.get_current_power()
+        end_temp = self.get_temperature()
+        if end_power > 0:
+            power_samples.append(end_power)
+        if end_temp > 0:
+            temp_samples.append(end_temp)
+        
+        # Ek örnekler al (kısa bir süre daha ölçüm yap)
+        extra_power, _ = self.get_current_power()
+        if extra_power > 0:
+            power_samples.append(extra_power)
+        
+        execution_time_ms = (end_time - start_time) * 1000
+        
+        # Enerji hesapla
+        if power_samples:
+            avg_power = sum(power_samples) / len(power_samples)
+            max_power = max(power_samples)
+            min_power = min(power_samples)
+            # Enerji = Güç × Zaman (Joule = Watt × saniye)
+            energy_joules = avg_power * (execution_time_ms / 1000)
+        else:
+            avg_power = max_power = min_power = energy_joules = 0
+        
+        avg_temp = sum(temp_samples) / len(temp_samples) if temp_samples else 0
+        
+        return RealEnergyResult(
+            algorithm="measured_function",
+            data_size=0,
+            execution_time_ms=execution_time_ms,
+            energy_joules=energy_joules,
+            avg_power_watts=avg_power,
+            max_power_watts=max_power,
+            min_power_watts=min_power,
+            cpu_frequency_mhz=0,
+            cpu_temperature_c=avg_temp,
+            cpu_utilization=0,
+            measurement_source='libre_hardware_monitor',
+            is_real_measurement=True,
+            sample_count=len(power_samples),
+            sampling_interval_ms=sampling_interval_ms,
+            timestamp=datetime.now().isoformat(),
+            success=True
+        )
+    
+    def _create_error_result(self, error: str) -> 'RealEnergyResult':
+        return RealEnergyResult(
+            algorithm="error",
+            data_size=0,
+            execution_time_ms=0,
+            energy_joules=0,
+            avg_power_watts=0,
+            max_power_watts=0,
+            min_power_watts=0,
+            cpu_frequency_mhz=0,
+            cpu_temperature_c=0,
+            cpu_utilization=0,
+            measurement_source='error',
+            is_real_measurement=False,
+            sample_count=0,
+            sampling_interval_ms=0,
+            timestamp=datetime.now().isoformat(),
+            success=False,
+            error_message=error
+        )
 
 
 class RealEnergyMeter:
@@ -496,7 +633,7 @@ class RealEnergyMeter:
     
     def is_available(self) -> bool:
         """Gerçek ölçüm kullanılabilir mi?"""
-        return self.method == 'intel_power_gadget'
+        return self.method in ('intel_power_gadget', 'libre_hardware_monitor')
     
     def get_method(self) -> str:
         """Kullanılan ölçüm yöntemini döndür"""
@@ -544,10 +681,35 @@ class RealEnergyMeter:
                 sampling_interval_ms=0,
                 timestamp=datetime.now().isoformat(),
                 success=False,
-                error_message="Gerçek ölçüm için Intel Power Gadget gerekli"
+                error_message="Gerçek ölçüm için Intel Power Gadget veya LibreHardwareMonitor gerekli"
             )
         
-        result = self.intel_meter.measure(func, *args, **kwargs)
+        # Kullanılabilir yönteme göre ölçüm yap
+        if self.method == 'intel_power_gadget':
+            result = self.intel_meter.measure(func, *args, **kwargs)
+        elif self.method == 'libre_hardware_monitor':
+            result = self.libre_meter.measure(func, *args, **kwargs)
+        else:
+            return RealEnergyResult(
+                algorithm=algorithm_name,
+                data_size=data_size,
+                execution_time_ms=0,
+                energy_joules=0,
+                avg_power_watts=0,
+                max_power_watts=0,
+                min_power_watts=0,
+                cpu_frequency_mhz=0,
+                cpu_temperature_c=0,
+                cpu_utilization=0,
+                measurement_source='none',
+                is_real_measurement=False,
+                sample_count=0,
+                sampling_interval_ms=0,
+                timestamp=datetime.now().isoformat(),
+                success=False,
+                error_message="Uygun ölçüm yöntemi bulunamadı"
+            )
+        
         result.algorithm = algorithm_name
         result.data_size = data_size
         

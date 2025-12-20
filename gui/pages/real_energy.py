@@ -46,6 +46,15 @@ ALGORITHM_TYPES = {
     'greedy': {'name': 'Acgozlu', 'icon': 'GRD', 'color': '#4361EE'}
 }
 
+# LibreHardwareMonitor desteği
+try:
+    from real_energy_meter import LibreHardwareMonitorMeter
+    LIBRE_METER = LibreHardwareMonitorMeter()
+    HAS_LIBRE = LIBRE_METER.is_available()
+except:
+    LIBRE_METER = None
+    HAS_LIBRE = False
+
 
 class EnergyTestWorker(QThread):
     """Enerji testi worker thread'i"""
@@ -71,7 +80,12 @@ class EnergyTestWorker(QThread):
         self.log_signal.emit("[*] Enerji analizi baslatiliyor...")
         self.log_signal.emit(f"    Algoritmalar: {len(self.algorithms)}")
         self.log_signal.emit(f"    Boyutlar: {self.sizes}")
-        self.log_signal.emit(f"    Tekrar: {self.runs}\n")
+        self.log_signal.emit(f"    Tekrar: {self.runs}")
+        if HAS_LIBRE:
+            self.log_signal.emit("    [OK] LibreHardwareMonitor: GERCEK OLCUM AKTIF")
+        else:
+            self.log_signal.emit("    [!] LibreHardwareMonitor: YOK (tahmini 25W kullaniliyor)")
+        self.log_signal.emit("")
         
         for algo_key in self.algorithms:
             if not self._running:
@@ -122,6 +136,13 @@ class EnergyTestWorker(QThread):
                     # Generate test data
                     data = [random.randint(1, size * 10) for _ in range(size)]
                     
+                    # Başlangıç güç ölçümü (LibreHardwareMonitor varsa)
+                    start_power = 25.0  # Varsayılan
+                    if HAS_LIBRE and LIBRE_METER:
+                        power_val, _ = LIBRE_METER.get_current_power()
+                        if power_val > 0:
+                            start_power = power_val
+                    
                     # Measure
                     import tracemalloc
                     tracemalloc.start()
@@ -139,9 +160,16 @@ class EnergyTestWorker(QThread):
                     exec_time = (end - start) * 1000  # ms
                     memory = peak_mem / 1024  # KB
                     
-                    # Energy estimation (power * time)
-                    power = 25.0  # Estimated watts
-                    energy = power * (exec_time / 1000)  # Joules
+                    # Bitiş güç ölçümü ve enerji hesabı
+                    end_power = start_power
+                    if HAS_LIBRE and LIBRE_METER:
+                        power_val, _ = LIBRE_METER.get_current_power()
+                        if power_val > 0:
+                            end_power = power_val
+                    
+                    # Ortalama güç ile enerji hesapla
+                    avg_power = (start_power + end_power) / 2
+                    energy = avg_power * (exec_time / 1000)  # Joules
                     
                     size_times.append(exec_time)
                     size_energies.append(energy)
