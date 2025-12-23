@@ -210,40 +210,30 @@ def strassen_matrix_mult(data: List[int]) -> Tuple[List[List[int]], AlgorithmMet
 # ========================================
 
 def knapsack_01(data: List[int]) -> Tuple[int, AlgorithmMetrics]:
-    """
-    0/1 Knapsack Problemi
-    Veriyi (değer, ağırlık) çiftlerine böler.
-    """
     metrics = AlgorithmMetrics()
     
     n = len(data) // 2
-    if n == 0: return 0, metrics
-    
+    if n == 0:
+        return 0, metrics
+
     values = data[:n]
     weights = data[n:2*n]
-    capacity = sum(weights) // 2  # Toplam ağırlığın yarısı kapasite olsun
-    
-    # DP tablosu
-    K = [[0 for x in range(capacity + 1)] for x in range(n + 1)]
-    metrics.memory_accesses += (n + 1) * (capacity + 1)
-    
-    for i in range(n + 1):
-        for w in range(capacity + 1):
+
+    capacity = 1000  # SABİT KAPASİTE (KRİTİK)
+
+    # 1D DP
+    K = [0] * (capacity + 1)
+
+    for i in range(n):
+        for w in range(capacity, weights[i] - 1, -1):
             metrics.iterations += 1
-            if i == 0 or w == 0:
-                K[i][w] = 0
-            elif weights[i-1] <= w:
-                metrics.comparisons += 1
-                metrics.operations += 1
-                metrics.memory_accesses += 4
-                val1 = values[i-1] + K[i-1][w-weights[i-1]]
-                val2 = K[i-1][w]
-                K[i][w] = max(val1, val2)
-            else:
-                metrics.memory_accesses += 2
-                K[i][w] = K[i-1][w]
-                
-    return K[n][capacity], metrics
+            metrics.operations += 1
+
+            new_val = K[w - weights[i]] + values[i]
+            if new_val > K[w]:
+                K[w] = new_val
+
+    return K[capacity], metrics
 
 def floyd_warshall(data: List[int]) -> Tuple[List[List[int]], AlgorithmMetrics]:
     """
