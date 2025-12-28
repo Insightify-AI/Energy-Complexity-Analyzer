@@ -123,8 +123,8 @@ Bu platform, **LibreHardwareMonitor** entegrasyonu sayesinde **gerçek donanım 
 ### 1️⃣ Depoyu Klonlayın
 
 ```bash
-git clone https://github.com/Insightify-AI/python_energy.git
-cd python_energy
+git clone https://github.com/Insightify-AI/Energy-Complexity-Analyzer.git
+cd Energy-Complexity-Analyzer
 ```
 
 ### 2️⃣ Sanal Ortam Oluşturun (Önerilen)
