@@ -170,7 +170,7 @@ python run_app.py
 ### Uygulamayı Başlatma
 
 ```bash
-cd python_energy
+cd Energy-Complexity-Analyzer
 python run_app.py
 ```
 
